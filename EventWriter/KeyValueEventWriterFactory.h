@@ -7,13 +7,20 @@
 
 
 #include "EventWriterFactory.h"
+
+#include <utility>
 #include "KeyValueEventWriter.h"
 
 class KeyValueEventWriterFactory : public EventWriterFactory {
 public:
-    EventWriter* getWriter() const override {
-        return new KeyValueEventWriter();
+    explicit KeyValueEventWriterFactory(std::string output_file): m_output_file(std::move(output_file)) {}
+
+    [[nodiscard]] EventWriter* getWriter() const override {
+        return new KeyValueEventWriter(this->m_output_file);
     }
+
+private:
+    std::string m_output_file;
 };
 
 

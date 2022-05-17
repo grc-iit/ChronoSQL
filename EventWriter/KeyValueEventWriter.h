@@ -7,17 +7,20 @@
 
 
 #include <iostream>
+#include <utility>
 #include "EventWriter.h"
 
 class KeyValueEventWriter : public EventWriter {
 public:
-    int writeToFile(std::string filename, std::string payload, std::string args[]) const override {
+    explicit KeyValueEventWriter(std::string output_file) {
+        m_output_file = std::move(output_file);
+    }
+
+    int writeToFile(char *payload, std::string args[]) const override {
         if (args->length() > 0) {
-            std::ofstream output_file = KeyValueEventWriter::openFile(filename);
+            std::ofstream output_file = KeyValueEventWriter::openFile(m_output_file);
             output_file << args[0] << ", " << payload << std::endl;
             output_file.close();
-            std::cout << "Hey!";
-
             return 0;
         }
 
