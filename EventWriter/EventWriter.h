@@ -7,10 +7,11 @@
 
 #include <string>
 #include <fstream>
+#include "../Event/Event.h"
 
 class EventWriter {
 public:
-    virtual int writeToFile(char *payload, std::string args[]) const { return 0; };
+    virtual int writeToFile(Event *event) const { return 0; };
 
     static std::ofstream openFile(const std::string &filename) {
         std::ofstream output_file;

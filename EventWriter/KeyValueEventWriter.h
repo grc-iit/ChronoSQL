@@ -9,6 +9,7 @@
 #include <iostream>
 #include <utility>
 #include "EventWriter.h"
+#include "../Event/KeyValueEvent.h"
 
 class KeyValueEventWriter : public EventWriter {
 public:
@@ -16,15 +17,12 @@ public:
         m_output_file = std::move(output_file);
     }
 
-    int writeToFile(char *payload, std::string args[]) const override {
-        if (args->length() > 0) {
-            std::ofstream output_file = KeyValueEventWriter::openFile(m_output_file);
-            output_file << args[0] << ", " << payload << std::endl;
-            output_file.close();
-            return 0;
-        }
-
-        return 1;
+    [[nodiscard]] int writeToFile(Event *event) const override {
+        auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
+        std::ofstream output_file = KeyValueEventWriter::openFile(m_output_file);
+        output_file << kvEvent->getTimestamp() << ',' << kvEvent->getPayload() << ';';
+        output_file.close();
+        return 0;
     }
 };
 

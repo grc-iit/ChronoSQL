@@ -10,7 +10,7 @@
 
 class EventWriterFactory {
 public:
-    virtual EventWriter* getWriter() const = 0;
+    [[nodiscard]] virtual EventWriter *getWriter() const = 0;
 };
 
 
