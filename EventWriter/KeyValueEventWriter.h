@@ -19,20 +19,42 @@ public:
         m_output_file = std::move(output_file);
     }
 
-    [[nodiscard]] int writeToFile(Event *event) const override {
-        auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
+    int writeToFile(Event *event) const override {
+        KeyValueEvent *kvEvent = toKeyValue(event);
         if (kvEvent != nullptr) {
-            std::ofstream output_file = KeyValueEventWriter::openFile(m_output_file);
-            output_file << kvEvent->getTimestamp() << ',' << trimByteSequence(kvEvent->getPayload()) << ';';
-            output_file.close();
+            std::ofstream outputFile = KeyValueEventWriter::openFile(m_output_file);
+            writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
+            outputFile.close();
             return 0;
         }
 
         return 1;
     }
 
+    int writeToFile(std::list<Event *> events) const override {
+        std::ofstream outputFile = KeyValueEventWriter::openFile(m_output_file);
+        for (auto const i: events) {
+            KeyValueEvent *kvEvent = toKeyValue(i);
+            if (kvEvent != nullptr) {
+                writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
+            }
+        }
+        outputFile.close();
+
+        return 0;
+    }
+
 private:
     int fixedPayloadSize;
+
+    static KeyValueEvent *toKeyValue(Event *event) {
+        // TODO is this ok?
+        return dynamic_cast<KeyValueEvent *>(event);
+    }
+
+    void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, char *payload) const {
+        outFile << timestamp << ',' << trimByteSequence(payload) << ';';
+    }
 
     char *trimByteSequence(char *payload) const {
         int receivedSize = strlen(payload);

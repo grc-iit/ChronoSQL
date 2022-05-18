@@ -7,12 +7,17 @@
 
 #include <cstring>
 #include <random>
+#include <list>
 #include "../Event/Event.h"
 
 class EventGenerator {
 
 public:
     [[nodiscard]] virtual Event *generateEvent() const { return nullptr; };
+
+    [[nodiscard]] virtual Event *generateEvent(int size) const { return nullptr; };
+
+    [[nodiscard]] virtual std::list<Event *> generateEvents(int nEvents, int payloadVariation) const { return {}; };
 
     [[nodiscard]] char *generateRandomBytes(int size) const {
 

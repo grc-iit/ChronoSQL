@@ -7,12 +7,15 @@
 
 #include <string>
 #include <fstream>
+#include <list>
 #include "../Event/Event.h"
 
 class EventWriter {
 
 public:
     virtual int writeToFile(Event *event) const { return 0; };
+
+    virtual int writeToFile(std::list<Event *> events) const { return {}; };
 
     static std::ofstream openFile(const std::string &filename) {
         std::ofstream output_file;
