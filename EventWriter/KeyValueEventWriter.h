@@ -41,17 +41,21 @@ private:
             return payload;
         }
 
-        char *trimmed = new char[fixedPayloadSize];
+        char *trimmed = new char[fixedPayloadSize + 1]; // Null terminating character (+1)
 
         if (receivedSize < fixedPayloadSize) {
-            // Pad whitespaces at the end
+            // Copy the source sequence
             strncpy(trimmed, payload, receivedSize);
-            for (int i = receivedSize - 1; i < fixedPayloadSize; i++) {
+            // And pad with whitespaces at the end
+            for (int i = receivedSize; i < fixedPayloadSize; i++) {
                 trimmed[i] = ' ';
             }
         } else {
+            // Copy only until we reach the max size
             strncpy(trimmed, payload, fixedPayloadSize);
         }
+        // Terminate with the null char
+        trimmed[fixedPayloadSize] = '\0';
 
         return trimmed;
     }

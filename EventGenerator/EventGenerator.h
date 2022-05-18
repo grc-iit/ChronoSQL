@@ -12,17 +12,20 @@
 class EventGenerator {
 
 public:
-    virtual Event *generateEvent() const { return nullptr; };
+    [[nodiscard]] virtual Event *generateEvent() const { return nullptr; };
 
-    char *generateRandomBytes(int size) const {
+    [[nodiscard]] char *generateRandomBytes(int size) const {
 
-        char *result = new char[size];
+        char *result = new char[size + 1];  // + 1 to reserve space for the null terminating char
+
+        // Random generator
         std::mt19937 rg{std::random_device{}()};
         std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(charset) - 2);
 
         for (int i = 0; i < size; i++) {
-            result[i] = 'a' + charset[pick(rg)];
+            result[i] = charset[pick(rg)];
         }
+        result[size] = '\0';
 
         return result;
     }

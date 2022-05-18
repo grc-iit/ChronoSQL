@@ -5,7 +5,7 @@
 int main() {
     auto generator = new KeyValueEventGenerator(10);
 
-    auto *writerFactory = new KeyValueEventWriterFactory("test.bin", 10);
+    auto *writerFactory = new KeyValueEventWriterFactory("test.bin", 15);
     auto *writer = writerFactory->getWriter();
 
     writer->writeToFile(generator->generateEvent());
