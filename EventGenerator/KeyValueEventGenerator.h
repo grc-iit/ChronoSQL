@@ -12,11 +12,16 @@
 class KeyValueEventGenerator : public EventGenerator {
 
 public:
+    explicit KeyValueEventGenerator(int payloadSize_) : payloadSize(payloadSize_) {}
+
     [[nodiscard]] Event *generateEvent() const override {
-        auto *event = new KeyValueEvent(std::time(nullptr), generateRandomChar(10));
+        auto *event = new KeyValueEvent(std::time(nullptr), generateRandomBytes(payloadSize));
 
         return event;
     }
+
+private:
+    int payloadSize;
 };
 
 

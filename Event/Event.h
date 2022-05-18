@@ -11,14 +11,13 @@
 class Event {
 
 public:
-
     virtual ~Event() = default;
 
     Event() : timestamp(std::time(nullptr)) {}
 
     explicit Event(std::time_t timestamp_) : timestamp(timestamp_) {}
 
-    std::time_t getTimestamp() {
+    [[nodiscard]] std::time_t getTimestamp() const {
         return timestamp;
     }
 

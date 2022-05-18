@@ -3,9 +3,9 @@
 #include "EventGenerator/KeyValueEventGenerator.h"
 
 int main() {
-    auto generator = new KeyValueEventGenerator();
+    auto generator = new KeyValueEventGenerator(10);
 
-    auto *writerFactory = new KeyValueEventWriterFactory("test.bin");
+    auto *writerFactory = new KeyValueEventWriterFactory("test.bin", 10);
     auto *writer = writerFactory->getWriter();
 
     writer->writeToFile(generator->generateEvent());

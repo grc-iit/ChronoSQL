@@ -11,7 +11,6 @@
 class KeyValueEvent : public Event {
 
 public:
-
     explicit KeyValueEvent(char *payload_) : Event(), payload(payload_) {}
 
     KeyValueEvent(std::time_t timestamp_, char *payload_) : Event(timestamp_), payload(payload_) {}

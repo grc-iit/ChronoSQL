@@ -10,11 +10,11 @@
 #include "../Event/Event.h"
 
 class EventGenerator {
-public:
 
+public:
     virtual Event *generateEvent() const { return nullptr; };
 
-    char *generateRandomChar(int size) const {
+    char *generateRandomBytes(int size) const {
 
         char *result = new char[size];
         std::mt19937 rg{std::random_device{}()};

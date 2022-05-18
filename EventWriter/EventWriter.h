@@ -10,6 +10,7 @@
 #include "../Event/Event.h"
 
 class EventWriter {
+
 public:
     virtual int writeToFile(Event *event) const { return 0; };
 
