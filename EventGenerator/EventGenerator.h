@@ -17,7 +17,7 @@ public:
 
     [[nodiscard]] virtual Event *generateEvent(int size) const { return nullptr; };
 
-    [[nodiscard]] virtual std::list<Event *> generateEvents(int nEvents, int payloadVariation) const { return {}; };
+    [[nodiscard]] virtual std::list<Event *> generateEvents(int nEvents) const { return {}; };
 
     [[nodiscard]] char *generateRandomBytes(int size) const {
 

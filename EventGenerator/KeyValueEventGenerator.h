@@ -12,7 +12,8 @@
 class KeyValueEventGenerator : public EventGenerator {
 
 public:
-    explicit KeyValueEventGenerator(int payloadSize_) : payloadSize(payloadSize_) {}
+    explicit KeyValueEventGenerator(int payloadSize_, int payloadVariation_) :
+            payloadSize(payloadSize_), payloadVariation(payloadVariation_) {}
 
     [[nodiscard]] Event *generateEvent() const override {
         return generateEvent(payloadSize);
@@ -22,7 +23,7 @@ public:
         return new KeyValueEvent(std::time(nullptr), generateRandomBytes(size));
     }
 
-    [[nodiscard]] std::list<Event *> generateEvents(int nEvents, int payloadVariation) const override {
+    [[nodiscard]] std::list<Event *> generateEvents(int nEvents) const override {
         std::list<Event *> events;
 
         // A random value between payloadSize +/- payloadVariation will be generated for each event
@@ -38,6 +39,7 @@ public:
 
 private:
     int payloadSize;
+    int payloadVariation;
 };
 
 
