@@ -14,6 +14,7 @@
 #include "../include/rapidjson/document.h"
 #include "Enumerations.h"
 #include "ConfigConstants.h"
+#include "ConfigurationValues.h"
 
 using namespace rapidjson;
 using namespace Enumerations;
@@ -22,35 +23,29 @@ using namespace ConfigConstants;
 class ConfigurationManager {
 
 public:
-
-    // The source where the configuration will be read from
-    std::string configurationFile;
-
-    // Common configuration
-    int nEvents;
-    EventType eventType;
-    std::string outputFile;
-
-    // Key-value configuration
-    int payloadSize = 0;
-    int payloadVariation = 0;
-    int fixedPayloadSize = 0;
-
-    ConfigurationManager(std::string configurationFile_) : configurationFile(std::move(configurationFile_)) {
+    explicit ConfigurationManager(const std::string &configurationFile) {
+        configuration = new ConfigurationValues();
         Document configDoc = getJsonDocument(configurationFile);
-        config(configDoc, NUMBER_EVENTS, nEvents);
-        config(configDoc, EVENT_TYPE, eventType);
-        config(configDoc, OUTPUT_FILE, outputFile);
+        config(configDoc, NUMBER_EVENTS, configuration->nEvents);
+        config(configDoc, EVENT_TYPE, configuration->eventType);
+        config(configDoc, OUTPUT_FILE, configuration->outputFile);
 
-        if (eventType == EventType::KEY_VALUE) {
-            config(configDoc, PAYLOAD_SIZE, payloadSize);
-            config(configDoc, PAYLOAD_VARIATION, payloadVariation);
-            config(configDoc, FIXED_PAYLOAD_SIZE, fixedPayloadSize);
+        if (configuration->eventType == EventType::KEY_VALUE) {
+            config(configDoc, PAYLOAD_SIZE, configuration->payloadSize);
+            config(configDoc, PAYLOAD_VARIATION, configuration->payloadVariation);
+            config(configDoc, FIXED_PAYLOAD_SIZE, configuration->fixedPayloadSize);
         }
+    }
+
+    ConfigurationValues *getConfiguration() {
+        return configuration;
     }
 
 
 private:
+    // The source where the configuration will be read from
+    ConfigurationValues *configuration;
+
     Document getJsonDocument(const std::string &filename) {
         // open the JSON file
         std::ifstream jFile(filename);

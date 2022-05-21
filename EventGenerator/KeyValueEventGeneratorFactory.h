@@ -12,7 +12,7 @@
 
 class KeyValueEventGeneratorFactory {
 public:
-    explicit KeyValueEventGeneratorFactory(const ConfigurationManager *config) :
+    explicit KeyValueEventGeneratorFactory(const ConfigurationValues *config) :
             payloadSize(config->payloadSize), payloadVariation(config->payloadVariation) {}
 
     [[nodiscard]] EventGenerator *getGenerator() const {

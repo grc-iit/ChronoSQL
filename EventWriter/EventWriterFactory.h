@@ -12,7 +12,7 @@
 
 class EventWriterFactory {
 public:
-    [[nodiscard]] EventWriter *getWriter(const ConfigurationManager *config) {
+    [[nodiscard]] EventWriter *getWriter(const ConfigurationValues *config) {
         if (config->eventType == EventType::KEY_VALUE) {
             auto *kvGeneratorFactory = new KeyValueEventWriterFactory(config);
             return kvGeneratorFactory->getWriter();

@@ -14,7 +14,7 @@
 
 class KeyValueEventWriterFactory {
 public:
-    explicit KeyValueEventWriterFactory(const ConfigurationManager *configurationManager) :
+    explicit KeyValueEventWriterFactory(const ConfigurationValues *configurationManager) :
             m_output_file(configurationManager->outputFile), payloadSize(configurationManager->payloadSize) {}
 
     [[nodiscard]] EventWriter *getWriter() const {

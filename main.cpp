@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    auto *config = new ConfigurationManager(argv[1]);
+    auto *config = (new ConfigurationManager(argv[1]))->getConfiguration();
 
     auto *generatorFactory = new EventGeneratorFactory();
     auto *generator = generatorFactory->getGenerator(config);

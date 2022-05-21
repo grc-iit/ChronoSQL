@@ -14,7 +14,7 @@
 class EventGeneratorFactory {
 
 public:
-    [[nodiscard]] EventGenerator *getGenerator(const ConfigurationManager *config) {
+    [[nodiscard]] EventGenerator *getGenerator(const ConfigurationValues *config) {
         if (config->eventType == EventType::KEY_VALUE) {
             auto *kvGeneratorFactory = new KeyValueEventGeneratorFactory(config);
             return kvGeneratorFactory->getGenerator();
