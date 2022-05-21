@@ -13,8 +13,8 @@
 
 class KeyValueEventWriterFactory : public EventWriterFactory {
 public:
-    explicit KeyValueEventWriterFactory(std::string output_file, int maxPayloadSize_) : m_output_file(
-            std::move(output_file)), payloadSize(maxPayloadSize_) {}
+    explicit KeyValueEventWriterFactory(std::string output_file, int payloadSize_) : m_output_file(
+            std::move(output_file)), payloadSize(payloadSize_) {}
 
     [[nodiscard]] EventWriter *getWriter() const override {
         return new KeyValueEventWriter(this->m_output_file, payloadSize);
