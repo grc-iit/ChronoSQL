@@ -7,10 +7,21 @@
 
 
 #include "EventWriter.h"
+#include "../Config/ConfigurationManager.h"
+#include "KeyValueEventWriterFactory.h"
 
 class EventWriterFactory {
 public:
-    [[nodiscard]] virtual EventWriter *getWriter() const = 0;
+    [[nodiscard]] EventWriter *getWriter(const ConfigurationManager *config) {
+        if (config->eventType == EventType::KEY_VALUE) {
+            auto *kvGeneratorFactory = new KeyValueEventWriterFactory(config);
+            return kvGeneratorFactory->getWriter();
+        } else if (config->eventType == EventType::TEST) {
+            return nullptr;
+        }
+
+        return nullptr;
+    };
 };
 
 

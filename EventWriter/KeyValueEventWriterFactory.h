@@ -10,13 +10,14 @@
 
 #include <utility>
 #include "KeyValueEventWriter.h"
+#include "../Config/ConfigurationManager.h"
 
-class KeyValueEventWriterFactory : public EventWriterFactory {
+class KeyValueEventWriterFactory {
 public:
-    explicit KeyValueEventWriterFactory(std::string output_file, int payloadSize_) : m_output_file(
-            std::move(output_file)), payloadSize(payloadSize_) {}
+    explicit KeyValueEventWriterFactory(const ConfigurationManager *configurationManager) :
+            m_output_file(configurationManager->outputFile), payloadSize(configurationManager->payloadSize) {}
 
-    [[nodiscard]] EventWriter *getWriter() const override {
+    [[nodiscard]] EventWriter *getWriter() const {
         return new KeyValueEventWriter(this->m_output_file, payloadSize);
     }
 
