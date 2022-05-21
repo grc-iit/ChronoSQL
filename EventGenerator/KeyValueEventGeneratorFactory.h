@@ -8,13 +8,14 @@
 
 #include "EventGeneratorFactory.h"
 #include "KeyValueEventGenerator.h"
+#include "../Config/ConfigurationManager.h"
 
-class KeyValueEventGeneratorFactory : public EventGeneratorFactory {
+class KeyValueEventGeneratorFactory {
 public:
-    explicit KeyValueEventGeneratorFactory(int payloadSize_, int payloadVariation_) :
-            payloadSize(payloadSize_), payloadVariation(payloadVariation_) {}
+    explicit KeyValueEventGeneratorFactory(const ConfigurationManager *config) :
+            payloadSize(config->payloadSize), payloadVariation(config->payloadVariation) {}
 
-    [[nodiscard]] EventGenerator *getGenerator() const override {
+    [[nodiscard]] EventGenerator *getGenerator() const {
         return new KeyValueEventGenerator(payloadSize, payloadVariation);
     }
 

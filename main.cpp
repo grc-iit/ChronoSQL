@@ -1,13 +1,13 @@
 #include <iostream>
 #include "EventWriter/KeyValueEventWriterFactory.h"
-#include "EventGenerator/KeyValueEventGeneratorFactory.h"
 #include "Config/ConfigurationManager.h"
+#include "EventGenerator/EventGeneratorFactory.h"
 
 int main() {
-    auto config = new ConfigurationManager("../config.json");
+    auto *config = new ConfigurationManager("../config.json");
 
-    auto *generatorFactory = new KeyValueEventGeneratorFactory(15, 10);
-    auto *generator = generatorFactory->getGenerator();
+    auto *generatorFactory = new EventGeneratorFactory();
+    auto *generator = generatorFactory->getGenerator(config);
 
     auto *writerFactory = new KeyValueEventWriterFactory("test.bin", 15);
     auto *writer = writerFactory->getWriter();

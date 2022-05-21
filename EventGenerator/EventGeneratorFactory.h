@@ -7,9 +7,23 @@
 
 
 #include "EventGenerator.h"
+#include "../Config/ConfigurationManager.h"
+#include "KeyValueEventGeneratorFactory.h"
+#include "KeyValueEventGenerator.h"
 
 class EventGeneratorFactory {
-    [[nodiscard]] virtual EventGenerator *getGenerator() const = 0;
+
+public:
+    [[nodiscard]] EventGenerator *getGenerator(const ConfigurationManager *config) {
+        if (config->eventType == EventType::KEY_VALUE) {
+            auto *kvGeneratorFactory = new KeyValueEventGeneratorFactory(config);
+            return kvGeneratorFactory->getGenerator();
+        } else if (config->eventType == EventType::TEST) {
+            return nullptr;
+        }
+
+        return nullptr;
+    };
 };
 
 
