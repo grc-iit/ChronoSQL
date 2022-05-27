@@ -3,4 +3,4 @@ project(chronoSQL_poc)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(chronoSQL_poc main.cpp EventWriter/EventWriter.h EventWriter/KeyValueEventWriter.h EventWriter/EventWriterFactory.h EventWriter/KeyValueEventWriterFactory.h EventGenerator/EventGenerator.h EventGenerator/KeyValueEventGenerator.h Event/Event.h Event/KeyValueEvent.h EventGenerator/KeyValueEventGeneratorFactory.h EventGenerator/EventGeneratorFactory.h Config/ConfigurationManager.h Config/Enumerations.h Config/ConfigConstants.h Config/ConfigurationValues.h)
+add_executable(chronoSQL_poc main.cpp EventWriter/EventWriter.h EventWriter/FSKeyValueEventWriter.h EventWriter/EventWriterFactory.h EventWriter/FSKeyValueEventWriterFactory.h EventGenerator/EventGenerator.h EventGenerator/KeyValueEventGenerator.h Event/Event.h Event/KeyValueEvent.h EventGenerator/KeyValueEventGeneratorFactory.h EventGenerator/EventGeneratorFactory.h Config/ConfigurationManager.h Config/Enumerations.h Config/ConfigConstants.h Config/ConfigurationValues.h)

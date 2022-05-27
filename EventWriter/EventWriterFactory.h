@@ -8,13 +8,13 @@
 
 #include "EventWriter.h"
 #include "../Config/ConfigurationManager.h"
-#include "KeyValueEventWriterFactory.h"
+#include "FSKeyValueEventWriterFactory.h"
 
 class EventWriterFactory {
 public:
     [[nodiscard]] EventWriter *getWriter(const ConfigurationValues *config) {
         if (config->eventType == EventType::KEY_VALUE) {
-            auto *kvGeneratorFactory = new KeyValueEventWriterFactory(config);
+            auto *kvGeneratorFactory = new FSKeyValueEventWriterFactory(config);
             return kvGeneratorFactory->getWriter();
         } else if (config->eventType == EventType::TEST) {
             return nullptr;

@@ -2,8 +2,8 @@
 // Created by pablo on 16/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_KEYVALUEEVENTWRITER_H
-#define CHRONOSQL_POC_KEYVALUEEVENTWRITER_H
+#ifndef CHRONOSQL_POC_FSKEYVALUEEVENTWRITER_H
+#define CHRONOSQL_POC_FSKEYVALUEEVENTWRITER_H
 
 
 #include <iostream>
@@ -12,10 +12,11 @@
 #include "EventWriter.h"
 #include "../Event/KeyValueEvent.h"
 
-class KeyValueEventWriter : public EventWriter {
+class FSKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit KeyValueEventWriter(std::string output_file, int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {
+    explicit FSKeyValueEventWriter(std::string output_file, int fixedPayloadSize_) : fixedPayloadSize(
+            fixedPayloadSize_) {
         m_output_file = std::move(output_file);
         offset = 1;
         initOffset();
@@ -109,4 +110,4 @@ private:
     }
 };
 
-#endif //CHRONOSQL_POC_KEYVALUEEVENTWRITER_H
+#endif //CHRONOSQL_POC_FSKEYVALUEEVENTWRITER_H

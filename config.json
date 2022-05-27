@@ -1,5 +1,5 @@
 {
-  "NUMBER_EVENTS": 1,
+  "NUMBER_EVENTS": 100,
   "EVENT_TYPE": "KEY_VALUE",
   "OUTPUT_FILE": "test.bin",
   "PAYLOAD_SIZE": 15,
