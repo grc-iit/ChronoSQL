@@ -13,18 +13,25 @@
 class EventWriter {
 
 public:
-    virtual int writeToFile(Event *event) const { return 0; };
+    virtual int writeToFile(Event *event) { return 0; };
 
-    virtual int writeToFile(std::list<Event *> events) const { return {}; };
+    virtual int writeToFile(std::list<Event *> events) { return {}; };
 
-    static std::ofstream openFile(const std::string &filename) {
+    static std::ofstream openWriteFile(const std::string &filename) {
         std::ofstream output_file;
         output_file.open(filename, std::ios::out | std::ios::app);
         return output_file;
     }
 
+    static std::ifstream openReadFile(const std::string &filename) {
+        std::ifstream input_file;
+        input_file.open(filename, std::ios::ate);
+        return input_file;
+    }
+
 protected:
     std::string m_output_file;
+    int offset;
 };
 
 #endif //CHRONOSQL_POC_EVENTWRITER_H
