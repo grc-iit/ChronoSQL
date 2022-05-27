@@ -31,7 +31,9 @@ public:
 
 protected:
     std::string m_output_file;
+    std::string eventFile;
     int offset;
+    const std::string event_file_extension = "bin";
 };
 
 #endif //CHRONOSQL_POC_EVENTWRITER_H

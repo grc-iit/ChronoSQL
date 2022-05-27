@@ -18,6 +18,7 @@ public:
     explicit FSKeyValueEventWriter(std::string output_file, int fixedPayloadSize_) : fixedPayloadSize(
             fixedPayloadSize_) {
         m_output_file = std::move(output_file);
+        eventFile = m_output_file + '.' + event_file_extension;
         offset = 1;
         initOffset();
     }
@@ -25,7 +26,7 @@ public:
     int writeToFile(Event *event) override {
         KeyValueEvent *kvEvent = toKeyValue(event);
         if (kvEvent != nullptr) {
-            std::ofstream outputFile = openWriteFile(m_output_file);
+            std::ofstream outputFile = openWriteFile(eventFile);
             writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
             outputFile.close();
             return 0;
@@ -35,7 +36,7 @@ public:
     }
 
     int writeToFile(std::list<Event *> events) override {
-        std::ofstream outputFile = openWriteFile(m_output_file);
+        std::ofstream outputFile = openWriteFile(eventFile);
         for (auto const i: events) {
             KeyValueEvent *kvEvent = toKeyValue(i);
             if (kvEvent != nullptr) {
@@ -56,7 +57,7 @@ private:
     }
 
     void initOffset() {
-        std::ifstream file = openReadFile(m_output_file);
+        std::ifstream file = openReadFile(eventFile);
         std::streampos fileSize = file.tellg();
 
         // 1 char for '\0', fixedPayloadSize chars for payload, 1 char for ',', 10 chars for timestamp, 1 char for '@'
