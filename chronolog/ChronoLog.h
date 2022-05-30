@@ -13,14 +13,16 @@
 #include "../common/typedefs.h"
 #include "../eventReader/EventReader.h"
 #include "../eventReader/FSEventReader.h"
+#include "../eventReader/EventReaderFactory.h"
 
 class ChronoLog {
 
 public:
     explicit ChronoLog(ConfigurationValues *config) : configuration(config) {
         auto *writerFactory = new EventWriterFactory();
+        auto *readerFactory = new EventReaderFactory();
         eventWriter = writerFactory->getWriter(config);
-        eventReader = new FSEventReader("test.log", config->fixedPayloadSize);
+        eventReader = readerFactory->getReader(config);
     }
 
     EID record(CID cid, char *data) {
