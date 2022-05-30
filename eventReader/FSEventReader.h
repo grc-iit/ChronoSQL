@@ -44,10 +44,19 @@ public:
         // Size = payload + 10 (EID) + comma + semicolon
         int readSize = fixedPayloadSize + 10 + 1 + 1;
         while (i + readSize <= fileSize) {
+            char *id = new char[10];
             char *data = new char[fixedPayloadSize + 1];
-            file.seekg(i + 10 + 1);
-            file.get(data, fixedPayloadSize + 1);
-            events.push_back(data);
+
+            file.seekg(i);
+            file.get(id, 11);
+            auto eid = (std::time_t) strtol(id, nullptr, 10);
+
+            if (eid > start && eid < end) {
+                file.seekg(i + 10 + 1);
+                file.get(data, fixedPayloadSize + 1);
+                events.push_back(data);
+            }
+
             i += readSize;
         }
 
