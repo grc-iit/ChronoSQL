@@ -9,15 +9,17 @@
 #include "EventWriter.h"
 #include "../Config/ConfigurationManager.h"
 #include "FSKeyValueEventWriterFactory.h"
+#include "IndexedKeyValueEventWriterFactory.h"
 
 class EventWriterFactory {
 public:
     [[nodiscard]] EventWriter *getWriter(const ConfigurationValues *config) {
-        if (config->eventType == EventType::KEY_VALUE) {
-            auto *kvGeneratorFactory = new FSKeyValueEventWriterFactory(config);
-            return kvGeneratorFactory->getWriter();
-        } else if (config->eventType == EventType::TEST) {
-            return nullptr;
+        if (config->eventType == EventType::FIXED_KEY_VALUE) {
+            auto *kvWriterFactory = new FSKeyValueEventWriterFactory(config);
+            return kvWriterFactory->getWriter();
+        } else if (config->eventType == EventType::INDEXED_KEY_VALUE) {
+            auto *indexedWriterFactory = new IndexedKeyValueEventWriterFactory(config);
+            return indexedWriterFactory->getWriter();
         }
 
         return nullptr;

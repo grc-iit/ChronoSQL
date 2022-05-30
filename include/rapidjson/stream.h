@@ -67,7 +67,7 @@ concept Stream {
 /*!
     By using traits pattern, this type provides a default configuration for stream.
     For custom stream, this type can be specialized for other configuration.
-    See TEST(Reader, CustomStringStream) in readertest.cpp for example.
+    See INDEXED_KEY_VALUE(Reader, CustomStringStream) in readertest.cpp for example.
 */
     template<typename Stream>
     struct StreamTraits {

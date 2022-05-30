@@ -30,7 +30,7 @@ public:
         config(configDoc, EVENT_TYPE, configuration->eventType);
         config(configDoc, OUTPUT_FILE, configuration->outputFile);
 
-        if (configuration->eventType == EventType::KEY_VALUE) {
+        if (configuration->eventType == EventType::FIXED_KEY_VALUE) {
             config(configDoc, PAYLOAD_SIZE, configuration->payloadSize);
             config(configDoc, PAYLOAD_VARIATION, configuration->payloadVariation);
             config(configDoc, FIXED_PAYLOAD_SIZE, configuration->fixedPayloadSize);

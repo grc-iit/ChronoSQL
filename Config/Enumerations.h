@@ -11,13 +11,13 @@ namespace Enumerations {
 
     // Enum to determine the type of events that will be generated
     enum class EventType {
-        KEY_VALUE, TEST
+        FIXED_KEY_VALUE, INDEXED_KEY_VALUE
     };
 
     // Map to associate string values to the enum EventType
     static std::unordered_map<std::string, EventType> const EventTypeValues =
-            {{"KEY_VALUE", EventType::KEY_VALUE},
-             {"TEST",      EventType::TEST}};
+            {{"FIXED_KEY_VALUE",   EventType::FIXED_KEY_VALUE},
+             {"INDEXED_KEY_VALUE", EventType::INDEXED_KEY_VALUE}};
 }
 
 

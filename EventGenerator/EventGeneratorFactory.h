@@ -15,10 +15,10 @@ class EventGeneratorFactory {
 
 public:
     [[nodiscard]] EventGenerator *getGenerator(const ConfigurationValues *config) {
-        if (config->eventType == EventType::KEY_VALUE) {
+        if (config->eventType == EventType::FIXED_KEY_VALUE || config->eventType == EventType::INDEXED_KEY_VALUE) {
             auto *kvGeneratorFactory = new KeyValueEventGeneratorFactory(config);
             return kvGeneratorFactory->getGenerator();
-        } else if (config->eventType == EventType::TEST) {
+        } else {
             return nullptr;
         }
 
