@@ -11,6 +11,8 @@
 #include "../eventWriter/EventWriter.h"
 #include "../eventWriter/EventWriterFactory.h"
 #include "../common/typedefs.h"
+#include "../eventReader/EventReader.h"
+#include "../eventReader/FSEventReader.h"
 
 class ChronoLog {
 
@@ -18,6 +20,7 @@ public:
     explicit ChronoLog(ConfigurationValues *config) : configuration(config) {
         auto *writerFactory = new EventWriterFactory();
         eventWriter = writerFactory->getWriter(config);
+        eventReader = new FSEventReader("test.log", config->fixedPayloadSize);
     }
 
     EID record(CID cid, char *data) {
@@ -27,9 +30,14 @@ public:
         return id;
     }
 
+    char *playback() {
+        return eventReader->readLastEvent();
+    }
+
 private:
     ConfigurationValues *configuration;
     EventWriter *eventWriter;
+    EventReader *eventReader;
 };
 
 

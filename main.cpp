@@ -16,5 +16,6 @@ int main(int argc, char **argv) {
 
     auto *log = new ChronoLog(config);
     log->record(0, generator->generateRandomBytes(config->payloadSize));
+    std::cout << log->playback() << std::endl;
     return 0;
 }

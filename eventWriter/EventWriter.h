@@ -23,12 +23,6 @@ public:
         return output_file;
     }
 
-    static std::ifstream openReadFile(const std::string &filename) {
-        std::ifstream input_file;
-        input_file.open(filename, std::ios::ate);
-        return input_file;
-    }
-
 protected:
     std::string m_output_file;
     std::string eventFile;
