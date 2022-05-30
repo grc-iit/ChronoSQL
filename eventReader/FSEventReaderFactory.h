@@ -10,13 +10,16 @@
 #include <utility>
 #include "EventReader.h"
 #include "FSEventReader.h"
+#include "../common/Constants.h"
 #include "../config/ConfigurationValues.h"
+
+using namespace Constants;
 
 class FSEventReaderFactory {
 
 public:
     FSEventReaderFactory(const ConfigurationValues *config) : fixedPayloadSize(config->fixedPayloadSize) {
-        logfile = config->outputFile + ".log";
+        logfile = config->outputFile + LOG_EXTENSION;
     }
 
     [[nodiscard]] EventReader *getReader() const {

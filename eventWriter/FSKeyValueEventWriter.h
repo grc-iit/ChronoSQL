@@ -10,7 +10,10 @@
 #include <utility>
 #include <cstring>
 #include "EventWriter.h"
+#include "../common/Constants.h"
 #include "../event/KeyValueEvent.h"
+
+using namespace Constants;
 
 class FSKeyValueEventWriter : public EventWriter {
 
@@ -18,7 +21,7 @@ public:
     explicit FSKeyValueEventWriter(std::string output_file, int fixedPayloadSize_) : fixedPayloadSize(
             fixedPayloadSize_) {
         m_output_file = std::move(output_file);
-        eventFile = m_output_file + '.' + event_file_extension;
+        eventFile = m_output_file + LOG_EXTENSION;
     }
 
     int writeToFile(Event *event) override {

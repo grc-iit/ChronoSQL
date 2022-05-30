@@ -9,14 +9,17 @@
 #include <cstring>
 #include <iostream>
 #include "EventWriter.h"
+#include "../common/Constants.h"
 #include "../event/KeyValueEvent.h"
+
+using namespace Constants;
 
 class IndexedKeyValueEventWriter : public EventWriter {
 
 public:
     explicit IndexedKeyValueEventWriter(std::string output_file) {
         m_output_file = std::move(output_file);
-        eventFile = m_output_file + '.' + event_file_extension;
+        eventFile = m_output_file + '.' + LOG_EXTENSION;
         indexFile = m_output_file + '.' + index_file_extension;
     }
 
