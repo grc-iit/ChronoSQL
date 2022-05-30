@@ -8,7 +8,7 @@
 #include <cstring>
 #include <random>
 #include <list>
-#include "../Event/Event.h"
+#include "../event/Event.h"
 
 class EventGenerator {
 

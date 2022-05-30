@@ -8,7 +8,7 @@
 #include <string>
 #include <fstream>
 #include <list>
-#include "../Event/Event.h"
+#include "../event/Event.h"
 
 class EventWriter {
 
@@ -32,8 +32,7 @@ public:
 protected:
     std::string m_output_file;
     std::string eventFile;
-    int offset;
-    const std::string event_file_extension = "bin";
+    const std::string event_file_extension = "log";
 };
 
 #endif //CHRONOSQL_POC_EVENTWRITER_H

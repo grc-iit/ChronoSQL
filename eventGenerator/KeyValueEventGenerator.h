@@ -7,7 +7,7 @@
 
 
 #include "EventGenerator.h"
-#include "../Event/KeyValueEvent.h"
+#include "../event/KeyValueEvent.h"
 
 class KeyValueEventGenerator : public EventGenerator {
 

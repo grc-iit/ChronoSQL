@@ -9,7 +9,7 @@
 #include <cstring>
 #include <iostream>
 #include "EventWriter.h"
-#include "../Event/KeyValueEvent.h"
+#include "../event/KeyValueEvent.h"
 
 class IndexedKeyValueEventWriter : public EventWriter {
 
@@ -18,8 +18,6 @@ public:
         m_output_file = std::move(output_file);
         eventFile = m_output_file + '.' + event_file_extension;
         indexFile = m_output_file + '.' + index_file_extension;
-        offset = 1;
-        // TODO init offset
     }
 
     int writeToFile(Event *event) override {
@@ -58,9 +56,6 @@ private:
         outFile.tellp();
 
         std::cout << "HEYYY:" << outFile.tellp() << std::endl;
-
-//        outFile << offset << '@' << payloadSize << '#' << timestamp << ',' << payload << ';';
-        offset++;
     }
 };
 
