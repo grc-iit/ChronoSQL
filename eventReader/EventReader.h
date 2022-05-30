@@ -14,6 +14,8 @@ class EventReader {
 public:
     virtual char *readLastEvent() { return nullptr; }
 
+    virtual std::list<char *> readEventsInRange(std::time_t start, std::time_t end) { return {}; }
+
 protected:
     std::string logfile;
 

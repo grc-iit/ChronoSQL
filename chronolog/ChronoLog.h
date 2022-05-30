@@ -36,6 +36,10 @@ public:
         return eventReader->readLastEvent();
     }
 
+    std::list<char *> replay(EID startEID, EID endEID) {
+        return eventReader->readEventsInRange(startEID, endEID);
+    }
+
 private:
     ConfigurationValues *configuration;
     EventWriter *eventWriter;

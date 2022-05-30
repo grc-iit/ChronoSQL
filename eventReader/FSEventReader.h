@@ -23,13 +23,35 @@ public:
         int fileSize = (int) file.tellg();
 
         if (fileSize > fixedPayloadSize) {
-            char *payload = new char[fixedPayloadSize + 1];
+            char *data = new char[fixedPayloadSize + 1];
             file.seekg(fileSize - fixedPayloadSize - 1);
-            file.get(payload, fixedPayloadSize + 1);
-            return payload;
+            file.get(data, fixedPayloadSize + 1);
+            return data;
         }
 
         return nullptr;
+    }
+
+    std::list<char *> readEventsInRange(std::time_t start, std::time_t end) override {
+        // Very naive implementation: start reading from beginning until EID >= start is found
+        // Read from that point until EID > end is found
+
+        std::ifstream file = openReadFile(logfile);
+        std::streampos fileSize = file.tellg();
+        std::list<char *> events;
+
+        int i = 0;
+        // Size = payload + 10 (EID) + comma + semicolon
+        int readSize = fixedPayloadSize + 10 + 1 + 1;
+        while (i + readSize <= fileSize) {
+            char *data = new char[fixedPayloadSize + 1];
+            file.seekg(i + 10 + 1);
+            file.get(data, fixedPayloadSize + 1);
+            events.push_back(data);
+            i += readSize;
+        }
+
+        return events;
     }
 
 //    void initOffset() {
