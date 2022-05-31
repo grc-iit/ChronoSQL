@@ -13,9 +13,9 @@
 class EventWriter {
 
 public:
-    virtual int writeToFile(Event *event) { return 0; };
+    virtual int write(Event *event) { return 0; };
 
-    virtual int writeToFile(std::list<Event *> events) { return {}; };
+    virtual int write(std::list<Event *> events) { return {}; };
 
     static std::ofstream openWriteFile(const std::string &filename) {
         std::ofstream output_file;

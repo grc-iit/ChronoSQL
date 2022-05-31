@@ -24,7 +24,7 @@ public:
         eventFile = m_output_file + LOG_EXTENSION;
     }
 
-    int writeToFile(Event *event) override {
+    int write(Event *event) override {
         KeyValueEvent *kvEvent = toKeyValue(event);
         if (kvEvent != nullptr) {
             std::ofstream outputFile = openWriteFile(eventFile);
@@ -36,7 +36,7 @@ public:
         return 1;
     }
 
-    int writeToFile(std::list<Event *> events) override {
+    int write(std::list<Event *> events) override {
         std::ofstream outputFile = openWriteFile(eventFile);
         for (auto const i: events) {
             KeyValueEvent *kvEvent = toKeyValue(i);

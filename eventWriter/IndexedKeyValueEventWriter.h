@@ -23,7 +23,7 @@ public:
         indexFile = m_output_file + '.' + index_file_extension;
     }
 
-    int writeToFile(Event *event) override {
+    int write(Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
             std::ofstream outputFile = openWriteFile(eventFile);
@@ -36,7 +36,7 @@ public:
         return 1;
     }
 
-    int writeToFile(std::list<Event *> events) override {
+    int write(std::list<Event *> events) override {
         std::ofstream outputFile = openWriteFile(eventFile);
         std::ofstream outputIndexFile = openWriteFile(indexFile);
         for (auto const i: events) {

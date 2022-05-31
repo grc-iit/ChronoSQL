@@ -28,7 +28,7 @@ public:
     EID record(CID cid, char *data) {
         EID id = std::time(nullptr);
         auto *event = new KeyValueEvent(id, data);
-        eventWriter->writeToFile(event);
+        eventWriter->write(event);
         return id;
     }
 

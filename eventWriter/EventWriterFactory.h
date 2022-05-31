@@ -5,25 +5,22 @@
 #ifndef CHRONOSQL_POC_EVENTWRITERFACTORY_H
 #define CHRONOSQL_POC_EVENTWRITERFACTORY_H
 
-
-#include "EventWriter.h"
-#include "../Config/ConfigurationManager.h"
+#include "FSMemoryKeyValueEventWriterFactory.h"
 #include "FSKeyValueEventWriterFactory.h"
-#include "IndexedKeyValueEventWriterFactory.h"
 
 class EventWriterFactory {
 public:
-    [[nodiscard]] EventWriter *getWriter(const ConfigurationValues *config) {
-        if (config->eventType == EventType::FIXED_KEY_VALUE) {
-            auto *kvWriterFactory = new FSKeyValueEventWriterFactory(config);
-            return kvWriterFactory->getWriter();
-        } else if (config->eventType == EventType::INDEXED_KEY_VALUE) {
-            auto *indexedWriterFactory = new IndexedKeyValueEventWriterFactory(config);
-            return indexedWriterFactory->getWriter();
+    EventWriter *getWriter(const ConfigurationValues *config) {
+        if (config->eventType == EventType::MEMORY_KEY_VALUE) {
+            auto *memFactory = new FSMemoryKeyValueEventWriterFactory(config);
+            return memFactory->getWriter();
+        } else if (config->eventType == EventType::FIXED_KEY_VALUE) {
+            auto *fixedFactory = new FSKeyValueEventWriterFactory(config);
+            return fixedFactory->getWriter();
         }
 
         return nullptr;
-    };
+    }
 };
 
 

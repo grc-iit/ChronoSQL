@@ -7,7 +7,7 @@
 
 
 #include <string>
-#include "../Config/ConfigurationValues.h"
+#include "../config/ConfigurationValues.h"
 #include "EventWriter.h"
 #include "IndexedKeyValueEventWriter.h"
 

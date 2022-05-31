@@ -35,6 +35,7 @@ public:
     std::list<char *> readEventsInRange(std::time_t start, std::time_t end) override {
         // Very naive implementation: start reading from beginning until EID >= start is found
         // Read from that point until EID > end is found
+        // Alternative: perform binary search to find an event in the range, and start from there
 
         std::ifstream file = openReadFile(logfile);
         std::streampos fileSize = file.tellg();
