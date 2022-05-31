@@ -16,21 +16,16 @@ class MemEventReader : public EventReader {
 public:
     explicit MemEventReader(std::string logfile_) {
         logfile = std::move(logfile_);
-    }
-
-    void setEvents(std::list<Event *> *events_) {
-        events = events_;
+        storage = new MemoryEventStorage();
     }
 
     char *readLastEvent() override {
-        Event *last = events->back();
-
-        return (dynamic_cast<KeyValueEvent *>(last))->getPayload();
+        return (dynamic_cast<KeyValueEvent *>(storage->getEvents()->back()))->getPayload();
     }
 
     std::list<char *> readEventsInRange(std::time_t start, std::time_t end) override {
         std::list<char *> eventsInRange;
-        for (auto event: *events) {
+        for (auto event: *storage->getEvents()) {
             auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
             if ((start == VOID_TIMESTAMP || kvEvent->getTimestamp() >= start) &&
                 (end == VOID_TIMESTAMP || kvEvent->getTimestamp() <= end)) {
@@ -46,7 +41,8 @@ public:
     }
 
 private:
-    std::list<Event *> *events;
+//    std::list<Event *> *events;
+    MemoryEventStorage *storage;
 };
 
 
