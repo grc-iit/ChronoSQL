@@ -21,23 +21,18 @@ public:
     explicit FSMemoryKeyValueEventWriter(std::string output_file) {
         m_output_file = std::move(output_file);
         eventFile = m_output_file + LOG_EXTENSION;
-        storage = new MemoryEventStorage();
-        storage->initialize();
+        MemoryEventStorage::initialize();
     }
 
     int write(Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
-            storage->addEvent(kvEvent);
+            MemoryEventStorage::addEvent(kvEvent);
             return 0;
         }
 
         return -1;
     }
-
-private:
-//    std::list<Event *> *events;
-    MemoryEventStorage *storage;
 };
 
 

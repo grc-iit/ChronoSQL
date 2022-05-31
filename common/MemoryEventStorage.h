@@ -14,24 +14,21 @@ class MemoryEventStorage {
 public:
     static std::list<Event *> *events;
 
-    void initialize() {
+    static void initialize() {
         events = new std::list<Event *>;
     }
 
-    std::list<Event *> *getEvents() {
+    static std::list<Event *> *getEvents() {
         return events;
     }
 
-    void setEvents(std::list<Event *> *events_) {
+    static void setEvents(std::list<Event *> *events_) {
         events = events_;
     }
 
-    void addEvent(Event *event) {
+    static void addEvent(Event *event) {
         events->push_back(event);
     }
-
-private:
-
 };
 
 std::list<Event *> *MemoryEventStorage::events = new std::list<Event *>;
