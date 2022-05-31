@@ -28,6 +28,23 @@ public:
         return (dynamic_cast<KeyValueEvent *>(last))->getPayload();
     }
 
+    std::list<char *> readEventsInRange(std::time_t start, std::time_t end) override {
+        std::list<char *> eventsInRange;
+        for (auto event: *events) {
+            auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
+            if ((start == VOID_TIMESTAMP || kvEvent->getTimestamp() >= start) &&
+                (end == VOID_TIMESTAMP || kvEvent->getTimestamp() <= end)) {
+                eventsInRange.push_back(kvEvent->getPayload());
+            }
+
+            if (end != VOID_TIMESTAMP && kvEvent->getTimestamp() > end) {
+                break;
+            }
+        }
+
+        return eventsInRange;
+    }
+
 private:
     std::list<Event *> *events;
 };
