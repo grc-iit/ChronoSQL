@@ -57,6 +57,10 @@ public:
                 events.push_back(data);
             }
 
+            if (end != VOID_TIMESTAMP && eid > end) {
+                break;
+            }
+
             i += readSize;
         }
 
