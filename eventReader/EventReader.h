@@ -12,6 +12,8 @@
 class EventReader {
 
 public:
+    static const int VOID_TIMESTAMP = -1;
+
     virtual char *readLastEvent() { return nullptr; }
 
     virtual std::list<char *> readEventsInRange(std::time_t start, std::time_t end) { return {}; }

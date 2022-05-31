@@ -51,7 +51,7 @@ public:
             file.get(id, 11);
             auto eid = (std::time_t) strtol(id, nullptr, 10);
 
-            if (eid > start && eid < end) {
+            if ((start == VOID_TIMESTAMP || eid >= start) && (end == VOID_TIMESTAMP || eid <= end)) {
                 file.seekg(i + 10 + 1);
                 file.get(data, fixedPayloadSize + 1);
                 events.push_back(data);
@@ -62,29 +62,6 @@ public:
 
         return events;
     }
-
-//    void initOffset() {
-//        std::ifstream file = openReadFile(eventFile);
-//        std::streampos fileSize = file.tellg();
-//
-//        // 1 char for '\0', fixedPayloadSize chars for payload, 1 char for ',', 10 chars for timestamp, 1 char for '@'
-//        int offsetPosition = fixedPayloadSize + 10 + 3 + 1;
-//        if (fileSize >= offsetPosition) {
-//            char c;
-//            std::string retrievedOffset;
-//            file.seekg(-offsetPosition, std::ios::end);
-//            file.get(c);
-//
-//            while (c != '\0' && c != ';' && (offsetPosition) <= fileSize) {
-//                retrievedOffset.insert(0, 1, c);
-//                offsetPosition++;
-//                file.seekg(-offsetPosition, std::ios::end);
-//                file.get(c);
-//            }
-//
-//            offset = std::stoi(retrievedOffset) + 1;
-//        }
-//    }
 
 private:
     int fixedPayloadSize;
