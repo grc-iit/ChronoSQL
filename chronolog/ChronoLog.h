@@ -23,6 +23,12 @@ public:
         auto *readerFactory = new EventReaderFactory();
         eventWriter = writerFactory->getWriter(config);
         eventReader = readerFactory->getReader(config);
+
+        // TODO look for another way of doing this
+        if (config->eventType == EventType::MEMORY_KEY_VALUE) {
+            dynamic_cast<MemEventReader *>(eventReader)->setEvents(
+                    dynamic_cast<FSMemoryKeyValueEventWriter *>(eventWriter)->getEvents());
+        }
     }
 
     EID record(CID cid, char *data) {

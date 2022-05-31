@@ -9,6 +9,7 @@
 #include "EventReader.h"
 #include "../config/ConfigurationValues.h"
 #include "FSEventReaderFactory.h"
+#include "MemEventReaderFactory.h"
 
 class EventReaderFactory {
 
@@ -17,6 +18,9 @@ public:
         if (config->eventType == EventType::FIXED_KEY_VALUE) {
             auto *factory = new FSEventReaderFactory(config);
             return factory->getReader();
+        } else if (config->eventType == EventType::MEMORY_KEY_VALUE) {
+            auto *memFactory = new MemEventReaderFactory(config);
+            return memFactory->getReader();
         } else {
             return nullptr;
         }

@@ -14,8 +14,12 @@ int main(int argc, char **argv) {
     auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation);
 
     auto *log = new ChronoLog(config);
-//    log->record(0, generator->generateRandomBytes(config->payloadSize));
-//    std::cout << log->playback() << std::endl;
+    log->record(0, generator->generateRandomBytes(config->payloadSize));
+    log->record(0, generator->generateRandomBytes(config->payloadSize));
+    log->record(0, generator->generateRandomBytes(config->payloadSize));
+    log->record(0, generator->generateRandomBytes(config->payloadSize));
+    log->record(0, generator->generateRandomBytes(config->payloadSize));
+    std::cout << log->playback() << std::endl;
 
     std::list<char *> events = log->replay(-1, -1);
 

@@ -20,20 +20,25 @@ public:
     explicit FSMemoryKeyValueEventWriter(std::string output_file) {
         m_output_file = std::move(output_file);
         eventFile = m_output_file + LOG_EXTENSION;
+        events = new std::list<Event *>;
     }
 
     int write(Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
-            events.push_back(event);
+            events->push_back(event);
             return 0;
         }
 
         return -1;
     }
 
+    std::list<Event *> *getEvents() {
+        return events;
+    }
+
 private:
-    std::list<Event *> events;
+    std::list<Event *> *events;
 };
 
 
