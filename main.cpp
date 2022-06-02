@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 #include "config/ConfigurationManager.h"
 #include "eventGenerator/EventGeneratorFactory.h"
 #include "chronolog/ChronoLog.h"
@@ -9,7 +10,10 @@ int mainLoop() {
     std::cout << "ChronoSQL version 0.0.1" << std::endl << "Type \"help\" for help." << std::endl;
 
     while (true) {
-        std::cout << "csql>";
+        if (isatty(STDIN_FILENO)) {
+            std::cout << "csql>";
+        }   // else: no prompt for non-interactive sessions
+
         std::getline(std::cin, command);
 
         if (command == "help") {
