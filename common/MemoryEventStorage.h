@@ -29,6 +29,16 @@ public:
     static void addEvent(Event *event) {
         events->push_back(event);
     }
+
+    static void dumpContents() {
+        std::cout << std::endl << "***** Dumping contents of the in-memory event storage... *****" << std::endl;
+        for (auto event: *events) {
+            if (auto *kvEvent = dynamic_cast<KeyValueEvent *>(event)) {
+                std::cout << kvEvent->getTimestamp() << ", " << kvEvent->getPayload() << std::endl;
+            }
+        }
+        std::cout << "***** Contents successfully dumped *****" << std::endl << std::endl;
+    }
 };
 
 std::list<Event *> *MemoryEventStorage::events = new std::list<Event *>;
