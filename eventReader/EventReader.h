@@ -12,7 +12,6 @@
 class EventReader {
 
 public:
-    static const int VOID_TIMESTAMP = -1;
 
     virtual char *readLastEvent() { return nullptr; }
 

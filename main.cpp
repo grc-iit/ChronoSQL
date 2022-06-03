@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 //    log->record(0, generator->generateRandomBytes(config->payloadSize));
 //    std::cout << log->playback() << std::endl;
 //
-//    // time_t timenum = (time_t) strtol(timestr, NULL, 10);
+//    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 //
 //    std::list<char *> events = log->replay(-1, -1);
 //

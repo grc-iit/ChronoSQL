@@ -5,6 +5,8 @@
 #ifndef CHRONOSQL_POC_CONSTANTS_H
 #define CHRONOSQL_POC_CONSTANTS_H
 
+#define VOID_TIMESTAMP -1
+
 
 namespace Constants {
     const char *LOG_EXTENSION = ".log";
