@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "config/ConfigurationManager.h"
-#include "eventGenerator/EventGeneratorFactory.h"
+#include "event_generator/EventGeneratorFactory.h"
 #include "chronolog/ChronoLog.h"
 
 int mainLoop() {

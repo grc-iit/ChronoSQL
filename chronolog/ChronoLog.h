@@ -8,12 +8,12 @@
 
 #include <string>
 #include "../config/ConfigurationManager.h"
-#include "../eventWriter/EventWriter.h"
-#include "../eventWriter/EventWriterFactory.h"
+#include "../event_writer/EventWriter.h"
+#include "../event_writer/EventWriterFactory.h"
 #include "../common/typedefs.h"
-#include "../eventReader/EventReader.h"
-#include "../eventReader/FSEventReader.h"
-#include "../eventReader/EventReaderFactory.h"
+#include "../event_reader/EventReader.h"
+#include "../event_reader/FSEventReader.h"
+#include "../event_reader/EventReaderFactory.h"
 
 class ChronoLog {
 
