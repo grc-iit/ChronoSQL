@@ -2,8 +2,8 @@
 // Created by pablo on 30/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_CHRONOLOG_H
-#define CHRONOSQL_POC_CHRONOLOG_H
+#ifndef ChronoSQL_CHRONOLOG_H
+#define ChronoSQL_CHRONOLOG_H
 
 
 #include <string>
@@ -47,4 +47,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_CHRONOLOG_H
+#endif //ChronoSQL_CHRONOLOG_H

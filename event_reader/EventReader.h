@@ -2,8 +2,8 @@
 // Created by pablo on 30/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENTREADER_H
-#define CHRONOSQL_POC_EVENTREADER_H
+#ifndef ChronoSQL_EVENTREADER_H
+#define ChronoSQL_EVENTREADER_H
 
 
 #include <fstream>
@@ -28,4 +28,4 @@ protected:
 };
 
 
-#endif //CHRONOSQL_POC_EVENTREADER_H
+#endif //ChronoSQL_EVENTREADER_H

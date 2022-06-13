@@ -2,8 +2,8 @@
 // Created by pablo on 17/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_KEYVALUEEVENT_H
-#define CHRONOSQL_POC_KEYVALUEEVENT_H
+#ifndef ChronoSQL_KEYVALUEEVENT_H
+#define ChronoSQL_KEYVALUEEVENT_H
 
 
 #include "Event.h"
@@ -24,4 +24,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_KEYVALUEEVENT_H
+#endif //ChronoSQL_KEYVALUEEVENT_H

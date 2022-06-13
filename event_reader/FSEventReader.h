@@ -2,8 +2,8 @@
 // Created by pablo on 30/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_FSEVENTREADER_H
-#define CHRONOSQL_POC_FSEVENTREADER_H
+#ifndef ChronoSQL_FSEVENTREADER_H
+#define ChronoSQL_FSEVENTREADER_H
 
 
 #include "EventReader.h"
@@ -73,4 +73,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_FSEVENTREADER_H
+#endif //ChronoSQL_FSEVENTREADER_H

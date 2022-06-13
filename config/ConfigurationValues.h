@@ -2,8 +2,8 @@
 // Created by pablo on 21/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_CONFIGURATIONVALUES_H
-#define CHRONOSQL_POC_CONFIGURATIONVALUES_H
+#ifndef ChronoSQL_CONFIGURATIONVALUES_H
+#define ChronoSQL_CONFIGURATIONVALUES_H
 
 #include "Enumerations.h"
 #include "ConfigConstants.h"
@@ -26,4 +26,4 @@ public:
 };
 
 
-#endif //CHRONOSQL_POC_CONFIGURATIONVALUES_H
+#endif //ChronoSQL_CONFIGURATIONVALUES_H

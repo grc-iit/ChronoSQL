@@ -2,8 +2,8 @@
 // Created by pablo on 31/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
-#define CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
+#ifndef ChronoSQL_MEMORYEVENTSTORAGE_H
+#define ChronoSQL_MEMORYEVENTSTORAGE_H
 
 
 #include <list>
@@ -44,4 +44,4 @@ public:
 std::list<Event *> *MemoryEventStorage::events = new std::list<Event *>;
 
 
-#endif //CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
+#endif //ChronoSQL_MEMORYEVENTSTORAGE_H

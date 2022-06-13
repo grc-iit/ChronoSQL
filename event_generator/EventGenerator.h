@@ -2,8 +2,8 @@
 // Created by pablo on 17/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENTGENERATOR_H
-#define CHRONOSQL_POC_EVENTGENERATOR_H
+#ifndef ChronoSQL_EVENTGENERATOR_H
+#define ChronoSQL_EVENTGENERATOR_H
 
 #include <cstring>
 #include <random>
@@ -39,4 +39,4 @@ protected:
     const char charset[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 };
 
-#endif //CHRONOSQL_POC_EVENTGENERATOR_H
+#endif //ChronoSQL_EVENTGENERATOR_H

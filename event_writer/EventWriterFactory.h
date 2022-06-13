@@ -2,8 +2,8 @@
 // Created by pablo on 16/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENTWRITERFACTORY_H
-#define CHRONOSQL_POC_EVENTWRITERFACTORY_H
+#ifndef ChronoSQL_EVENTWRITERFACTORY_H
+#define ChronoSQL_EVENTWRITERFACTORY_H
 
 #include "FSMemoryKeyValueEventWriterFactory.h"
 #include "FSKeyValueEventWriterFactory.h"
@@ -24,4 +24,4 @@ public:
 };
 
 
-#endif //CHRONOSQL_POC_EVENTWRITERFACTORY_H
+#endif //ChronoSQL_EVENTWRITERFACTORY_H

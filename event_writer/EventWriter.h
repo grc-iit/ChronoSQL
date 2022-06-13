@@ -2,8 +2,8 @@
 // Created by pablo on 16/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENTWRITER_H
-#define CHRONOSQL_POC_EVENTWRITER_H
+#ifndef ChronoSQL_EVENTWRITER_H
+#define ChronoSQL_EVENTWRITER_H
 
 #include <string>
 #include <fstream>
@@ -29,4 +29,4 @@ protected:
     const std::string event_file_extension = "log";
 };
 
-#endif //CHRONOSQL_POC_EVENTWRITER_H
+#endif //ChronoSQL_EVENTWRITER_H

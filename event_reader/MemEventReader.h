@@ -2,8 +2,8 @@
 // Created by pablo on 31/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_MEMEVENTREADER_H
-#define CHRONOSQL_POC_MEMEVENTREADER_H
+#ifndef ChronoSQL_MEMEVENTREADER_H
+#define ChronoSQL_MEMEVENTREADER_H
 
 
 #include <list>
@@ -41,4 +41,4 @@ public:
 };
 
 
-#endif //CHRONOSQL_POC_MEMEVENTREADER_H
+#endif //ChronoSQL_MEMEVENTREADER_H

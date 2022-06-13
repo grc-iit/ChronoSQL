@@ -32,7 +32,7 @@ int mainLoop() {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cout << "Usage: poc.exe <path_to_config_file>" << std::endl;
+        std::cout << "Usage: csql.exe <path_to_config_file>" << std::endl;
         return -1;
     }
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> events = log->replay(-1, -1);
+    std::list<char *> events = log->replay(VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
     for (auto &event: events) {

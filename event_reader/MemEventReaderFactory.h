@@ -2,8 +2,8 @@
 // Created by pablo on 31/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_MEMEVENTREADERFACTORY_H
-#define CHRONOSQL_POC_MEMEVENTREADERFACTORY_H
+#ifndef ChronoSQL_MEMEVENTREADERFACTORY_H
+#define ChronoSQL_MEMEVENTREADERFACTORY_H
 
 
 #include "../common/Constants.h"
@@ -31,4 +31,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_MEMEVENTREADERFACTORY_H
+#endif //ChronoSQL_MEMEVENTREADERFACTORY_H
