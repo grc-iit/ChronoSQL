@@ -7,7 +7,7 @@
 
 
 #include "EventGenerator.h"
-#include "../Config/ConfigurationManager.h"
+#include "../config/ConfigurationManager.h"
 #include "KeyValueEventGeneratorFactory.h"
 #include "KeyValueEventGenerator.h"
 

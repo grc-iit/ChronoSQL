@@ -8,7 +8,7 @@
 
 #include "EventGeneratorFactory.h"
 #include "KeyValueEventGenerator.h"
-#include "../Config/ConfigurationManager.h"
+#include "../config/ConfigurationManager.h"
 
 class KeyValueEventGeneratorFactory {
 public:

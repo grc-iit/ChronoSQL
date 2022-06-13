@@ -10,7 +10,7 @@
 
 #include <utility>
 #include "FSKeyValueEventWriter.h"
-#include "../Config/ConfigurationManager.h"
+#include "../config/ConfigurationManager.h"
 
 class FSKeyValueEventWriterFactory {
 public:
