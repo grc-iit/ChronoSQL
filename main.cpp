@@ -3,6 +3,7 @@
 #include "config/ConfigurationManager.h"
 #include "event_generator/EventGeneratorFactory.h"
 #include "chronolog/ChronoLog.h"
+#include "parser/ChronoSQLParser.h"
 
 int mainLoop() {
     std::string command;
@@ -23,6 +24,9 @@ int mainLoop() {
                       << std::endl << std::endl << "More coming soon!" << std::endl;
         } else if (command == "exit" || command == "q") {
             break;
+        } else {
+            auto *parser = new ChronoSQLParser();
+            parser->parse(command);
         }
     }
 
