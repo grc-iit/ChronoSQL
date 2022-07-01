@@ -24,7 +24,8 @@ public:
         MemoryEventStorage::initialize();
     }
 
-    int write(Event *event) override {
+    // TODO use CID
+    int write(CID cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
             MemoryEventStorage::addEvent(kvEvent);

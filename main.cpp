@@ -5,7 +5,8 @@
 #include "chronolog/ChronoLog.h"
 #include "parser/ChronoSQLParser.h"
 
-int mainLoop() {
+int mainLoop(EventReader *eventReader) {
+    auto *parser = new ChronoSQLParser(eventReader);
     std::string command;
 
     std::cout << "ChronoSQL version 0.0.1" << std::endl << "Type \"help\" for help." << std::endl;
@@ -25,7 +26,6 @@ int mainLoop() {
         } else if (command == "exit" || command == "q") {
             break;
         } else {
-            auto *parser = new ChronoSQLParser();
             parser->parse(command);
         }
     }
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> events = log->replay(VOID_TIMESTAMP, VOID_TIMESTAMP);
+    std::list<char *> events = log->replay(0, VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
     for (auto &event: events) {
@@ -64,5 +64,7 @@ int main(int argc, char **argv) {
     // Debug dump
     MemoryEventStorage::dumpContents();
 
-    return mainLoop();
+    auto *reader = (new EventReaderFactory())->getReader(config);
+
+    return mainLoop(reader);
 }

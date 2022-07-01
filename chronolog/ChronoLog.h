@@ -28,7 +28,7 @@ public:
     EID record(CID cid, char *data) {
         EID id = std::time(nullptr);
         auto *event = new KeyValueEvent(id, data);
-        eventWriter->write(event);
+        eventWriter->write(0, event);
         return id;
     }
 
@@ -36,7 +36,7 @@ public:
         return eventReader->readLastEvent();
     }
 
-    std::list<char *> replay(EID startEID, EID endEID) {
+    std::list<char *> replay(CID cid, EID startEID, EID endEID) {
         return eventReader->readEventsInRange(startEID, endEID);
     }
 

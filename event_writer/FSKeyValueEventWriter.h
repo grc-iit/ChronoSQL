@@ -24,7 +24,8 @@ public:
         eventFile = m_output_file + LOG_EXTENSION;
     }
 
-    int write(Event *event) override {
+    // TODO use CID
+    int write(CID cid, Event *event) override {
         KeyValueEvent *kvEvent = toKeyValue(event);
         if (kvEvent != nullptr) {
             std::ofstream outputFile = openWriteFile(eventFile);
@@ -36,7 +37,7 @@ public:
         return 1;
     }
 
-    int write(std::list<Event *> events) override {
+    int write(CID cid, std::list<Event *> events) override {
         std::ofstream outputFile = openWriteFile(eventFile);
         for (auto const i: events) {
             KeyValueEvent *kvEvent = toKeyValue(i);

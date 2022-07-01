@@ -9,13 +9,14 @@
 #include <fstream>
 #include <list>
 #include "../event/Event.h"
+#include "../common/typedefs.h"
 
 class EventWriter {
 
 public:
-    virtual int write(Event *event) { return 0; };
+    virtual int write(CID cid, Event *event) { return 0; };
 
-    virtual int write(std::list<Event *> events) { return {}; };
+    virtual int write(CID cid, std::list<Event *> events) { return {}; };
 
     static std::ofstream openWriteFile(const std::string &filename) {
         std::ofstream output_file;
