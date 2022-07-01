@@ -23,7 +23,7 @@ public:
     }
 
     [[nodiscard]] EventReader *getReader() const {
-        return new FSEventReader(logfile, fixedPayloadSize);
+        return new FSEventReader(fixedPayloadSize);
     }
 
 private:

@@ -18,15 +18,15 @@ class IndexedKeyValueEventWriter : public EventWriter {
 
 public:
     explicit IndexedKeyValueEventWriter(std::string output_file) {
-        m_output_file = std::move(output_file);
-        eventFile = m_output_file + '.' + LOG_EXTENSION;
-        indexFile = m_output_file + '.' + index_file_extension;
+//        m_output_file = std::move(output_file);
+//        eventFile = m_output_file + '.' + LOG_EXTENSION;
+//        indexFile = m_output_file + '.' + index_file_extension;
     }
 
     int write(CID cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
-            std::ofstream outputFile = openWriteFile(eventFile);
+            std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
             std::ofstream outputIndexFile = openWriteFile(indexFile);
             writeToOutputFile(outputFile, outputIndexFile, kvEvent->getTimestamp(), kvEvent->getPayload());
             outputFile.close();
@@ -37,7 +37,7 @@ public:
     }
 
     int write(CID cid, std::list<Event *> events) override {
-        std::ofstream outputFile = openWriteFile(eventFile);
+        std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
         std::ofstream outputIndexFile = openWriteFile(indexFile);
         for (auto const i: events) {
             auto *kvEvent = dynamic_cast<KeyValueEvent *>(i);

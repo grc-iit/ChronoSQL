@@ -8,6 +8,6 @@
 #include <ctime>
 
 typedef std::time_t EID;
-typedef char *CID;
+typedef std::string CID;
 
 #endif //ChronoSQL_TYPEDEFS_H

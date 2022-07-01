@@ -65,10 +65,10 @@ private:
         return 0;
     }
 
-    std::list<char *> executeExpressions(CID cid, const std::list<SelectExpression *> &expressions) {
+    std::list<char *> executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
         for (SelectExpression *e: expressions) {
             if (e->isStar) {
-                return eventReader->readEventsInRange(VOID_TIMESTAMP, VOID_TIMESTAMP);
+                return eventReader->readEventsInRange(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
             } else {
                 // Handle logic
             }

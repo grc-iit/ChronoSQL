@@ -18,17 +18,12 @@ using namespace Constants;
 class FSKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit FSKeyValueEventWriter(std::string output_file, int fixedPayloadSize_) : fixedPayloadSize(
-            fixedPayloadSize_) {
-        m_output_file = std::move(output_file);
-        eventFile = m_output_file + LOG_EXTENSION;
-    }
+    explicit FSKeyValueEventWriter(int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {}
 
-    // TODO use CID
-    int write(CID cid, Event *event) override {
+    int write(const CID &cid, Event *event) override {
         KeyValueEvent *kvEvent = toKeyValue(event);
         if (kvEvent != nullptr) {
-            std::ofstream outputFile = openWriteFile(eventFile);
+            std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
             writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
             outputFile.close();
             return 0;
@@ -37,8 +32,8 @@ public:
         return 1;
     }
 
-    int write(CID cid, std::list<Event *> events) override {
-        std::ofstream outputFile = openWriteFile(eventFile);
+    int write(const CID &cid, std::list<Event *> events) override {
+        std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
         for (auto const i: events) {
             KeyValueEvent *kvEvent = toKeyValue(i);
             if (kvEvent != nullptr) {

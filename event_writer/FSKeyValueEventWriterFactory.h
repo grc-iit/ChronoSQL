@@ -18,7 +18,7 @@ public:
             m_output_file(configurationManager->outputFile), payloadSize(configurationManager->payloadSize) {}
 
     [[nodiscard]] EventWriter *getWriter() const {
-        return new FSKeyValueEventWriter(this->m_output_file, payloadSize);
+        return new FSKeyValueEventWriter(payloadSize);
     }
 
 private:

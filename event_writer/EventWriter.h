@@ -14,20 +14,15 @@
 class EventWriter {
 
 public:
-    virtual int write(CID cid, Event *event) { return 0; };
+    virtual int write(const CID &cid, Event *event) { return 0; };
 
-    virtual int write(CID cid, std::list<Event *> events) { return {}; };
+    virtual int write(const CID &cid, std::list<Event *> events) { return {}; };
 
     static std::ofstream openWriteFile(const std::string &filename) {
         std::ofstream output_file;
         output_file.open(filename, std::ios::out | std::ios::app);
         return output_file;
     }
-
-protected:
-    std::string m_output_file;
-    std::string eventFile;
-    const std::string event_file_extension = "log";
 };
 
 #endif //ChronoSQL_EVENTWRITER_H

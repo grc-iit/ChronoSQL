@@ -18,17 +18,14 @@ using namespace Constants;
 class FSMemoryKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit FSMemoryKeyValueEventWriter(std::string output_file) {
-        m_output_file = std::move(output_file);
-        eventFile = m_output_file + LOG_EXTENSION;
+    explicit FSMemoryKeyValueEventWriter() {
         MemoryEventStorage::initialize();
     }
 
-    // TODO use CID
-    int write(CID cid, Event *event) override {
+    int write(const CID &cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
-            MemoryEventStorage::addEvent(kvEvent);
+            MemoryEventStorage::addEvent(cid, kvEvent);
             return 0;
         }
 

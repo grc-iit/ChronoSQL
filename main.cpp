@@ -45,16 +45,17 @@ int main(int argc, char **argv) {
     auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation);
 
     auto *log = new ChronoLog(config);
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    std::cout << log->playback() << std::endl;
+    std::string cid = "test";
+    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    std::cout << log->playback(cid) << std::endl;
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> events = log->replay(0, VOID_TIMESTAMP, VOID_TIMESTAMP);
+    std::list<char *> events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
     for (auto &event: events) {

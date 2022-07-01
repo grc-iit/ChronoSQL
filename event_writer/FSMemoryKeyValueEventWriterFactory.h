@@ -17,7 +17,7 @@ public:
             m_output_file(configurationManager->outputFile) {}
 
     [[nodiscard]] EventWriter *getWriter() const {
-        return new FSMemoryKeyValueEventWriter(this->m_output_file);
+        return new FSMemoryKeyValueEventWriter();
     }
 
 private:

@@ -17,8 +17,7 @@ class MemEventReaderFactory {
 
 public:
     explicit MemEventReaderFactory(const ConfigurationValues *config) {
-        logfile = config->outputFile + LOG_EXTENSION;
-        reader = new MemEventReader(logfile);
+        reader = new MemEventReader();
     }
 
     [[nodiscard]] EventReader *getReader() const {
