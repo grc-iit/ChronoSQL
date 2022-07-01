@@ -23,7 +23,7 @@ public:
         auto pos = events.find(cid);
         if (pos == events.end()) {
             // Not found
-            return {};
+            return nullptr;
         } else {
             return pos->second;
         }

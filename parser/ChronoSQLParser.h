@@ -36,10 +36,10 @@ public:
 private:
     EventReader *eventReader;
 
-    void printResults(const std::list<char *> &events) {
+    void printResults(std::list<char *> *events) {
         int i = 0;
         std::cout << std::endl;
-        for (auto &event: events) {
+        for (auto &event: *events) {
             std::cout << event << std::endl;
             i++;
         }
@@ -59,13 +59,18 @@ private:
             expressions.push_back(e);
         }
 
-        printResults(executeExpressions(statement->fromTable->name, expressions));
+        auto results = executeExpressions(statement->fromTable->name, expressions);
+        if (results == nullptr) {
+            std::cout << "ERROR: Chronicle " << statement->fromTable->name << " does not exist" << std::endl;
+            return -1;
+        }
+        printResults(results);
 
         std::cout << ". Selecting from " << statement->fromTable->name << std::endl;
         return 0;
     }
 
-    std::list<char *> executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
+    std::list<char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
         for (SelectExpression *e: expressions) {
             if (e->isStar) {
                 return eventReader->readEventsInRange(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);

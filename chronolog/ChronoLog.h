@@ -36,7 +36,7 @@ public:
         return eventReader->readLastEvent(cid);
     }
 
-    std::list<char *> replay(const CID &cid, EID startEID, EID endEID) {
+    std::list<char *> *replay(const CID &cid, EID startEID, EID endEID) {
         return eventReader->readEventsInRange(cid, startEID, endEID);
     }
 

@@ -55,10 +55,10 @@ int main(int argc, char **argv) {
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+    std::list<char *> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
-    for (auto &event: events) {
+    for (auto &event: *events) {
         std::cout << i++ << ": " << event << std::endl;
     }
 
