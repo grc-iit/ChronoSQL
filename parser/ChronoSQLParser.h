@@ -13,7 +13,9 @@
 class ChronoSQLParser {
 public:
 
-    ChronoSQLParser(EventReader *_eventReader) : eventReader(_eventReader) {}
+    ChronoSQLParser(ConfigurationValues *config) {
+        chronoLog = new ChronoLog(config);
+    }
 
     void parse(const std::string &query) {
         hsql::SQLParserResult result;
@@ -34,7 +36,7 @@ public:
     }
 
 private:
-    EventReader *eventReader;
+    ChronoLog *chronoLog;
 
     void printResults(std::list<char *> *events) {
         int i = 0;
@@ -61,7 +63,7 @@ private:
 
         auto results = executeExpressions(statement->fromTable->name, expressions);
         if (results == nullptr) {
-            std::cout << "ERROR: Chronicle " << statement->fromTable->name << " does not exist" << std::endl;
+            std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
             return -1;
         }
         printResults(results);
@@ -73,7 +75,7 @@ private:
     std::list<char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
         for (SelectExpression *e: expressions) {
             if (e->isStar) {
-                return eventReader->readEventsInRange(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+                return chronoLog->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
             } else {
                 // Handle logic
             }

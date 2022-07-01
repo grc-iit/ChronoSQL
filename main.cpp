@@ -5,8 +5,8 @@
 #include "chronolog/ChronoLog.h"
 #include "parser/ChronoSQLParser.h"
 
-int mainLoop(EventReader *eventReader) {
-    auto *parser = new ChronoSQLParser(eventReader);
+int mainLoop(ConfigurationValues *config) {
+    auto *parser = new ChronoSQLParser(config);
     std::string command;
 
     std::cout << "ChronoSQL version 0.0.1" << std::endl << "Type \"help\" for help." << std::endl;
@@ -67,5 +67,5 @@ int main(int argc, char **argv) {
 
     auto *reader = (new EventReaderFactory())->getReader(config);
 
-    return mainLoop(reader);
+    return mainLoop(config);
 }
