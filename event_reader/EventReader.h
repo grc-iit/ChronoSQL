@@ -13,9 +13,10 @@ class EventReader {
 
 public:
 
-    virtual char *readLastEvent(const CID &cid) { return nullptr; }
+    virtual const char *readLastEvent(const CID &cid) { return nullptr; }
 
-    virtual std::list<char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) { return {}; }
+    virtual std::list<const char *> *
+    readEventsInRange(const CID &cid, std::time_t start, std::time_t end) { return {}; }
 
 protected:
 

@@ -39,7 +39,7 @@ public:
 private:
     ChronoLog *chronoLog;
 
-    void printResults(std::list<char *> *events) {
+    void printResults(std::list<const char *> *events) {
         int i = 0;
         std::cout << std::endl;
         for (auto &event: *events) {
@@ -62,16 +62,12 @@ private:
             expressions.push_back(e);
         }
 
+        std::list<ConditionExpression *> *conditions = {};
         if (statement->whereClause != nullptr) {
-//            std::string op = operatorToToken.find(statement->whereClause->opType)->second;
-//            std::cout << "WHERE CLAUSE opType: " << op << std::endl;
-//            std::cout << "Expr: " << (statement->whereClause->expr->type) << std::endl;
-//            std::cout << "Expr2: " << (statement->whereClause->expr2->name) << std::endl;
-//            std::cout << "Exprlist: " << (statement->whereClause->exprList == nullptr) << std::endl;
-            parseWhereExpression(statement->whereClause);
+            conditions = parseWhereExpression(statement->whereClause);
         }
 
-        auto results = executeExpressions(statement->fromTable->name, expressions);
+        auto results = executeExpressions(statement->fromTable->name, expressions, conditions);
         if (results == nullptr) {
             std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
             return -1;
@@ -80,6 +76,37 @@ private:
 
         std::cout << ". Selecting from " << statement->fromTable->name << std::endl;
         return 0;
+    }
+
+    std::list<const char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions,
+                                                const std::list<ConditionExpression *> *conditions) {
+        for (SelectExpression *e: expressions) {
+            if (e->isStar) {
+                EID startEID = VOID_TIMESTAMP;
+                EID endEID = VOID_TIMESTAMP;
+                if (conditions != nullptr && !conditions->empty())
+                    for (auto cond: *conditions) {
+                        if (cond->fieldName == "EID") {
+                            std::cout << "conditioning!!!" << cond->intValue;
+                            if (cond->operatorType == hsql::kOpGreater) {
+                                startEID = cond->intValue + 1;
+                            } else if (cond->operatorType == hsql::kOpGreaterEq) {
+                                startEID = cond->intValue;
+                            } else if (cond->operatorType == hsql::kOpLess) {
+                                endEID = cond->intValue - 1;
+                            } else if (cond->operatorType == hsql::kOpLess) {
+                                endEID = cond->intValue;
+                            }
+                        }
+                    };
+                std::cout << "Start: " << startEID << ", end: " << endEID << std::endl;
+                return chronoLog->replay(cid, startEID, endEID);
+            } else {
+                // Handle logic
+            }
+        }
+
+        return {};
     }
 
     std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
@@ -126,18 +153,6 @@ private:
         }
 
         return nullptr;
-    }
-
-    std::list<char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
-        for (SelectExpression *e: expressions) {
-            if (e->isStar) {
-                return chronoLog->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
-            } else {
-                // Handle logic
-            }
-        }
-
-        return {};
     }
 
     SelectExpression *parseSelectToken(hsql::Expr *expr) {

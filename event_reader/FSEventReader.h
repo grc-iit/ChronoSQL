@@ -17,7 +17,7 @@ public:
     explicit FSEventReader(int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {
     }
 
-    char *readLastEvent(const CID &cid) override {
+    const char *readLastEvent(const CID &cid) override {
         std::ifstream file = openReadFile(cid + LOG_EXTENSION);
         int fileSize = (int) file.tellg();
 
@@ -31,14 +31,14 @@ public:
         return nullptr;
     }
 
-    std::list<char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
+    std::list<const char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
         // Very naive implementation: start reading from beginning until EID >= start is found
         // Read from that point until EID > end is found
         // Alternative: perform binary search to find an event in the range, and start from there
 
         std::ifstream file = openReadFile(cid + LOG_EXTENSION);
         std::streampos fileSize = file.tellg();
-        auto *events = new std::list<char *>;
+        auto *events = new std::list<const char *>;
 
         int i = 0;
         // Size = payload + 10 (EID) + comma + semicolon

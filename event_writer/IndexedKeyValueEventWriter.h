@@ -23,7 +23,7 @@ public:
 //        indexFile = m_output_file + '.' + index_file_extension;
     }
 
-    int write(CID cid, Event *event) override {
+    int write(const CID &cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
             std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
@@ -36,7 +36,7 @@ public:
         return 1;
     }
 
-    int write(CID cid, std::list<Event *> events) override {
+    int write(const CID &cid, std::list<Event *> events) override {
         std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
         std::ofstream outputIndexFile = openWriteFile(indexFile);
         for (auto const i: events) {
@@ -54,7 +54,8 @@ private:
     const std::string index_file_extension = "index";
     std::string indexFile;
 
-    void writeToOutputFile(std::ofstream &outFile, std::ofstream &indexOutFile, std::time_t timestamp, char *payload) {
+    void
+    writeToOutputFile(std::ofstream &outFile, std::ofstream &indexOutFile, std::time_t timestamp, const char *payload) {
         int payloadSize = std::strlen(payload);
         outFile.tellp();
 

@@ -5,6 +5,15 @@
 #include "chronolog/ChronoLog.h"
 #include "parser/ChronoSQLParser.h"
 
+void recordEvent(const CID &cid, const char *eid, const char *payload, EventWriter *eventWriter) {
+    eventWriter->write(cid, new KeyValueEvent((time_t) strtol(eid, nullptr, 10),
+                                              payload));
+}
+
+void recordEvent(const CID &cid, const char *payload, EventWriter *eventWriter) {
+    eventWriter->write(cid, new KeyValueEvent(std::time(nullptr), payload));
+}
+
 int mainLoop(ConfigurationValues *config) {
     auto *parser = new ChronoSQLParser(config);
     std::string command;
@@ -46,16 +55,31 @@ int main(int argc, char **argv) {
 
     auto *log = new ChronoLog(config);
     std::string cid = "test";
-    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    std::time(nullptr);
+
+    auto *writerFactory = new EventWriterFactory();
+    EventWriter *eventWriter = writerFactory->getWriter(config);
+    const char *st0 = "0000000000";
+    const char *st2 = "1656881867";
+    const char *st1 = "1656880867";
+    const char *st3 = "1656882867";
+    const char *st4 = "9999999999";
+
+    recordEvent(cid, st0, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st1, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st2, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st3, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st4, generator->generateRandomBytes(config->payloadSize), eventWriter);
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
     std::cout << log->playback(cid) << std::endl;
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+    std::list<const char *> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
     for (auto &event: *events) {

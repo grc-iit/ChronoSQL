@@ -19,7 +19,7 @@ public:
 
     [[nodiscard]] virtual std::list<Event *> generateEvents(int nEvents) const { return {}; };
 
-    [[nodiscard]] char *generateRandomBytes(int size) const {
+    [[nodiscard]] const char *generateRandomBytes(int size) const {
 
         char *result = new char[size + 1];  // + 1 to reserve space for the null terminating char
 

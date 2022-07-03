@@ -25,18 +25,18 @@ public:
         eventReader = readerFactory->getReader(config);
     }
 
-    EID record(const CID &cid, char *data) {
+    EID record(const CID &cid, const char *data) {
         EID id = std::time(nullptr);
         auto *event = new KeyValueEvent(id, data);
         eventWriter->write(cid, event);
         return id;
     }
 
-    char *playback(const CID &cid) {
+    const char *playback(const CID &cid) {
         return eventReader->readLastEvent(cid);
     }
 
-    std::list<char *> *replay(const CID &cid, EID startEID, EID endEID) {
+    std::list<const char *> *replay(const CID &cid, EID startEID, EID endEID) {
         return eventReader->readEventsInRange(cid, startEID, endEID);
     }
 

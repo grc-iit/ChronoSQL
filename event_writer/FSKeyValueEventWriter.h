@@ -53,11 +53,11 @@ private:
         return dynamic_cast<KeyValueEvent *>(event);
     }
 
-    void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, char *payload) {
+    void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, const char *payload) {
         outFile << timestamp << ',' << trimByteSequence(payload) << ';';
     }
 
-    char *trimByteSequence(char *payload) const {
+    const char *trimByteSequence(const char *payload) const {
         int receivedSize = strlen(payload);
 
         if (receivedSize == fixedPayloadSize) {

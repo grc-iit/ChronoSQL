@@ -5,7 +5,7 @@
 #ifndef ChronoSQL_CONSTANTS_H
 #define ChronoSQL_CONSTANTS_H
 
-#define VOID_TIMESTAMP -1
+#define VOID_TIMESTAMP -1234567890
 
 
 namespace Constants {

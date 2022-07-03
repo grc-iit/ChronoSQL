@@ -16,12 +16,12 @@ class MemEventReader : public EventReader {
 public:
     explicit MemEventReader() = default;
 
-    char *readLastEvent(const CID &cid) override {
+    const char *readLastEvent(const CID &cid) override {
         return (dynamic_cast<KeyValueEvent *>(MemoryEventStorage::getEvents(cid)->back()))->getPayload();
     }
 
-    std::list<char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
-        auto *eventsInRange = new std::list<char *>;
+    std::list<const char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
+        auto *eventsInRange = new std::list<const char *>;
         std::list<Event *> *events = MemoryEventStorage::getEvents(cid);
 
         if (events == nullptr) {
