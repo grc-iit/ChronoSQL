@@ -5,6 +5,7 @@
 #include <iostream>
 #include "SQLParser.h"
 #include "SelectExpression.h"
+#include "ConditionExpression.h"
 
 #ifndef CHRONOSQL_SQLPARSER_H
 #define CHRONOSQL_SQLPARSER_H
@@ -61,6 +62,15 @@ private:
             expressions.push_back(e);
         }
 
+        if (statement->whereClause != nullptr) {
+//            std::string op = operatorToToken.find(statement->whereClause->opType)->second;
+//            std::cout << "WHERE CLAUSE opType: " << op << std::endl;
+//            std::cout << "Expr: " << (statement->whereClause->expr->type) << std::endl;
+//            std::cout << "Expr2: " << (statement->whereClause->expr2->name) << std::endl;
+//            std::cout << "Exprlist: " << (statement->whereClause->exprList == nullptr) << std::endl;
+            parseWhereExpression(statement->whereClause);
+        }
+
         auto results = executeExpressions(statement->fromTable->name, expressions);
         if (results == nullptr) {
             std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
@@ -70,6 +80,52 @@ private:
 
         std::cout << ". Selecting from " << statement->fromTable->name << std::endl;
         return 0;
+    }
+
+    std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
+
+        std::string op = operatorToToken.find(expression->opType)->second;
+        if (expression->opType == hsql::kOpAnd || expression->opType == hsql::kOpOr) {
+            // Evaluate individual clauses
+            std::list<ConditionExpression *> *expr1 = parseWhereExpression(expression->expr);
+            std::list<ConditionExpression *> *expr2 = parseWhereExpression(expression->expr2);
+            expr1->splice(expr1->end(), *expr2);
+            return expr1;
+        }
+
+        if (expression->opType == hsql::kOpEquals || expression->opType == hsql::kOpNotEquals ||
+            expression->opType == hsql::kOpLess || expression->opType == hsql::kOpGreater ||
+            expression->opType == hsql::kOpLessEq || expression->opType == hsql::kOpGreaterEq) {
+            auto *result = new std::list<ConditionExpression *>;
+            if (expression->expr2->type == hsql::kExprLiteralInt) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr->name,
+                                                (int) expression->expr2->ival));
+            } else if (expression->expr2->type == hsql::kExprLiteralFloat) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr->name,
+                                                expression->expr2->fval));
+            } else if (expression->expr2->type == hsql::kExprLiteralString) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr->name,
+                                                expression->expr2->name));
+            } else if (expression->expr->type == hsql::kExprLiteralInt) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr2->name,
+                                                (int) expression->ival));
+            } else if (expression->expr->type == hsql::kExprLiteralFloat) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr2->name,
+                                                expression->fval));
+            } else if (expression->expr->type == hsql::kExprLiteralString) {
+                result->push_back(
+                        new ConditionExpression(expression->opType, expression->expr2->name,
+                                                expression->name));
+            }
+            return result;
+        }
+
+        return nullptr;
     }
 
     std::list<char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions) {
@@ -104,6 +160,35 @@ private:
             return nullptr;
         }
     }
+
+    const std::map<const hsql::OperatorType, const std::string> operatorToToken = {
+            {hsql::kOpNone,            "None"},
+            {hsql::kOpBetween,         "BETWEEN"},
+            {hsql::kOpCase,            "CASE"},
+            {hsql::kOpCaseListElement, "CASE LIST ELEMENT"},
+            {hsql::kOpPlus,            "+"},
+            {hsql::kOpMinus,           "-"},
+            {hsql::kOpAsterisk,        "*"},
+            {hsql::kOpSlash,           "/"},
+            {hsql::kOpPercentage,      "%"},
+            {hsql::kOpCaret,           "^"},
+            {hsql::kOpEquals,          "="},
+            {hsql::kOpNotEquals,       "!="},
+            {hsql::kOpLess,            "<"},
+            {hsql::kOpLessEq,          "<="},
+            {hsql::kOpGreater,         ">"},
+            {hsql::kOpGreaterEq,       ">="},
+            {hsql::kOpLike,            "LIKE"},
+            {hsql::kOpNotLike,         "NOT LIKE"},
+            {hsql::kOpILike,           "ILIKE"},
+            {hsql::kOpAnd,             "AND"},
+            {hsql::kOpOr,              "OR"},
+            {hsql::kOpIn,              "IN"},
+            {hsql::kOpConcat,          "CONCAT"},
+            {hsql::kOpNot,             "NOT"},
+            {hsql::kOpUnaryMinus,      "-"},
+            {hsql::kOpIsNull,          "IS NULL"},
+            {hsql::kOpExists,          "EXISTS"}};
 };
 
 
