@@ -89,7 +89,5 @@ int main(int argc, char **argv) {
     // Debug dump
     MemoryEventStorage::dumpContents();
 
-    auto *reader = (new EventReaderFactory())->getReader(config);
-
     return mainLoop(config);
 }

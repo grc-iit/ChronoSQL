@@ -96,6 +96,9 @@ private:
                                 endEID = cond->intValue - 1;
                             } else if (cond->operatorType == hsql::kOpLess) {
                                 endEID = cond->intValue;
+                            } else if (cond->operatorType == hsql::kOpEquals) {
+                                startEID = cond->intValue;
+                                endEID = cond->intValue;
                             }
                         }
                     };
