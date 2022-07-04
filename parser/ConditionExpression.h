@@ -19,11 +19,11 @@ public:
     hsql::OperatorType operatorType;
     ConditionType type;
     std::string fieldName;
-    int intValue;
+    long intValue;
     double doubleValue;
     std::string stringValue;
 
-    ConditionExpression(hsql::OperatorType _operatorType, std::string _fieldName, int _intValue) : operatorType(
+    ConditionExpression(hsql::OperatorType _operatorType, std::string _fieldName, long _intValue) : operatorType(
             _operatorType), fieldName(std::move(_fieldName)), intValue(_intValue) {
         type = ConditionType::INT;
     }

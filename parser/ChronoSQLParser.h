@@ -130,7 +130,7 @@ private:
             if (expression->expr2->type == hsql::kExprLiteralInt) {
                 result->push_back(
                         new ConditionExpression(expression->opType, expression->expr->name,
-                                                (int) expression->expr2->ival));
+                                                (long) expression->expr2->ival));
             } else if (expression->expr2->type == hsql::kExprLiteralFloat) {
                 result->push_back(
                         new ConditionExpression(expression->opType, expression->expr->name,
@@ -142,7 +142,7 @@ private:
             } else if (expression->expr->type == hsql::kExprLiteralInt) {
                 result->push_back(
                         new ConditionExpression(expression->opType, expression->expr2->name,
-                                                (int) expression->ival));
+                                                (long) expression->ival));
             } else if (expression->expr->type == hsql::kExprLiteralFloat) {
                 result->push_back(
                         new ConditionExpression(expression->opType, expression->expr2->name,
