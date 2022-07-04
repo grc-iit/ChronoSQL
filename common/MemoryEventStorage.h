@@ -9,6 +9,7 @@
 #include <list>
 #include <map>
 #include "../event/Event.h"
+#include "../exception/ChronicleNotFoundException.h"
 
 class MemoryEventStorage {
 
@@ -23,7 +24,7 @@ public:
         auto pos = events.find(cid);
         if (pos == events.end()) {
             // Not found
-            return nullptr;
+            throw ChronicleNotFoundException();
         } else {
             return pos->second;
         }

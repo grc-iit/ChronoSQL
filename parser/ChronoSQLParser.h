@@ -6,6 +6,7 @@
 #include "SQLParser.h"
 #include "SelectExpression.h"
 #include "ConditionExpression.h"
+#include "../exception/FieldNotFoundException.h"
 
 #ifndef CHRONOSQL_SQLPARSER_H
 #define CHRONOSQL_SQLPARSER_H
@@ -51,7 +52,6 @@ private:
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
         std::list<SelectExpression *> expressions = {};
-        std::cout << "Selecting ";
 
         for (hsql::Expr *expr: *statement->selectList) {
             SelectExpression *e = parseSelectToken(expr);
@@ -67,14 +67,20 @@ private:
             conditions = parseWhereExpression(statement->whereClause);
         }
 
-        auto results = executeExpressions(statement->fromTable->name, expressions, conditions);
-        if (results == nullptr) {
+        std::list<const char *> *results;
+
+        try {
+            results = executeExpressions(statement->fromTable->name, expressions, conditions);
+        } catch (ChronicleNotFoundException &e) {
             std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
             return -1;
+        } catch (FieldNotFoundException &e) {
+            std::cout << "ERROR: Field \"" << e.getField() << "\" does not exist" << std::endl;
+            return -1;
         }
+
         printResults(results);
 
-        std::cout << ". Selecting from " << statement->fromTable->name << std::endl;
         return 0;
     }
 
@@ -87,7 +93,6 @@ private:
                 if (conditions != nullptr && !conditions->empty())
                     for (auto cond: *conditions) {
                         if (cond->fieldName == "EID") {
-                            std::cout << "conditioning!!!" << cond->intValue;
                             if (cond->operatorType == hsql::kOpGreater) {
                                 startEID = cond->intValue + 1;
                             } else if (cond->operatorType == hsql::kOpGreaterEq) {
@@ -100,9 +105,10 @@ private:
                                 startEID = cond->intValue;
                                 endEID = cond->intValue;
                             }
+                        } else {
+                            throw FieldNotFoundException(cond->fieldName);
                         }
-                    };
-                std::cout << "Start: " << startEID << ", end: " << endEID << std::endl;
+                    }
                 return chronoLog->replay(cid, startEID, endEID);
             } else {
                 // Handle logic
@@ -113,8 +119,6 @@ private:
     }
 
     std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
-
-        std::string op = operatorToToken.find(expression->opType)->second;
         if (expression->opType == hsql::kOpAnd || expression->opType == hsql::kOpOr) {
             // Evaluate individual clauses
             std::list<ConditionExpression *> *expr1 = parseWhereExpression(expression->expr);
@@ -160,7 +164,6 @@ private:
 
     SelectExpression *parseSelectToken(hsql::Expr *expr) {
         if (expr->type == hsql::kExprStar) {
-            std::cout << " all(*) ";
             return SelectExpression::starExpression();
         } else if (expr->type == hsql::kExprColumnRef) {
             std::cout << " field " << expr->name;
@@ -178,35 +181,6 @@ private:
             return nullptr;
         }
     }
-
-    const std::map<const hsql::OperatorType, const std::string> operatorToToken = {
-            {hsql::kOpNone,            "None"},
-            {hsql::kOpBetween,         "BETWEEN"},
-            {hsql::kOpCase,            "CASE"},
-            {hsql::kOpCaseListElement, "CASE LIST ELEMENT"},
-            {hsql::kOpPlus,            "+"},
-            {hsql::kOpMinus,           "-"},
-            {hsql::kOpAsterisk,        "*"},
-            {hsql::kOpSlash,           "/"},
-            {hsql::kOpPercentage,      "%"},
-            {hsql::kOpCaret,           "^"},
-            {hsql::kOpEquals,          "="},
-            {hsql::kOpNotEquals,       "!="},
-            {hsql::kOpLess,            "<"},
-            {hsql::kOpLessEq,          "<="},
-            {hsql::kOpGreater,         ">"},
-            {hsql::kOpGreaterEq,       ">="},
-            {hsql::kOpLike,            "LIKE"},
-            {hsql::kOpNotLike,         "NOT LIKE"},
-            {hsql::kOpILike,           "ILIKE"},
-            {hsql::kOpAnd,             "AND"},
-            {hsql::kOpOr,              "OR"},
-            {hsql::kOpIn,              "IN"},
-            {hsql::kOpConcat,          "CONCAT"},
-            {hsql::kOpNot,             "NOT"},
-            {hsql::kOpUnaryMinus,      "-"},
-            {hsql::kOpIsNull,          "IS NULL"},
-            {hsql::kOpExists,          "EXISTS"}};
 };
 
 
