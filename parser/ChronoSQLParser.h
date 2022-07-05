@@ -2,7 +2,9 @@
 // Created by pablo on 17/6/22.
 //
 
+#include <set>
 #include <iostream>
+#include <algorithm>
 #include "SQLParser.h"
 #include "SelectExpression.h"
 #include "ConditionExpression.h"
@@ -40,18 +42,31 @@ public:
 private:
     ChronoLog *chronoLog;
 
+    const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "SUM", "AVG"};
+
     void printResults(std::list<const char *> *events) {
-        int i = 0;
+        int i = 0, isAggregate = 0;
         std::cout << std::endl;
+
+        if (events->size() == 2 && SUPPORTED_FUNCTIONS.count(events->front())) {
+            isAggregate = 1;
+            std::cout << events->front() << std::endl;
+            events->pop_front();
+        }
+
+        std::cout << "--------" << std::endl;
         for (auto &event: *events) {
             std::cout << event << std::endl;
             i++;
         }
-        std::cout << "(" << i << " events)" << std::endl;
+
+        if (!isAggregate) {
+            std::cout << "(" << i << " events)" << std::endl;
+        }
     }
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
-        std::list<SelectExpression *> expressions = {};
+        auto *expressions = new std::list<SelectExpression *>;
 
         for (hsql::Expr *expr: *statement->selectList) {
             SelectExpression *e = parseSelectToken(expr);
@@ -59,7 +74,7 @@ private:
                 return -1;
             }
 
-            expressions.push_back(e);
+            expressions->push_back(e);
         }
 
         std::list<ConditionExpression *> *conditions = {};
@@ -84,9 +99,9 @@ private:
         return 0;
     }
 
-    std::list<const char *> *executeExpressions(const CID &cid, const std::list<SelectExpression *> &expressions,
+    std::list<const char *> *executeExpressions(const CID &cid, std::list<SelectExpression *> *expressions,
                                                 const std::list<ConditionExpression *> *conditions) {
-        for (SelectExpression *e: expressions) {
+        for (SelectExpression *e: *expressions) {
             if (e->isStar) {
                 EID startEID = VOID_TIMESTAMP;
                 EID endEID = VOID_TIMESTAMP;
@@ -99,7 +114,7 @@ private:
                                 startEID = cond->intValue;
                             } else if (cond->operatorType == hsql::kOpLess) {
                                 endEID = cond->intValue - 1;
-                            } else if (cond->operatorType == hsql::kOpLess) {
+                            } else if (cond->operatorType == hsql::kOpLessEq) {
                                 endEID = cond->intValue;
                             } else if (cond->operatorType == hsql::kOpEquals) {
                                 startEID = cond->intValue;
@@ -110,6 +125,26 @@ private:
                         }
                     }
                 return chronoLog->replay(cid, startEID, endEID);
+            } else if (e->isFunction) {
+                auto *value = new std::list<const char *>;
+                std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
+                if (SUPPORTED_FUNCTIONS.count(e->name)) {
+                    value->push_back(e->name.c_str());
+
+                    auto results = executeExpressions(cid, e->nestedExpressions, conditions);
+
+                    if (e->name == "COUNT") {
+                        value->push_back(std::to_string(results->size()).c_str());
+                    } else if (e->name == "SUM") {
+                        // TODO what to add here??
+                        value->push_back(std::to_string(results->size()).c_str());
+                    } else {    // AVG
+                        // TODO what to avg???
+                        double avg = 0;
+//                        for ()
+                    }
+                    return value;
+                }
             } else {
                 // Handle logic
             }
@@ -169,11 +204,10 @@ private:
             std::cout << " field " << expr->name;
             return SelectExpression::columnExpression(expr->name);
         } else if (expr->type == hsql::kExprFunctionRef) {
-            std::cout << "function " << expr->name;
             auto *function = SelectExpression::functionExpression(expr->name);
             for (hsql::Expr *e: *expr->exprList) {
                 // Do the same for each inner expression
-                function->nestedExpressions.push_back(parseSelectToken(e));
+                function->nestedExpressions->push_back(parseSelectToken(e));
             }
             return function;
         } else {

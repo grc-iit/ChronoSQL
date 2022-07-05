@@ -17,7 +17,7 @@ public:
     bool isFunction;
     bool isColumn;
     std::string name;
-    std::list<SelectExpression *> nestedExpressions;
+    std::list<SelectExpression *> *nestedExpressions;
 
     static SelectExpression *starExpression() {
         auto *expr = new SelectExpression();
@@ -30,7 +30,7 @@ public:
         auto *expr = new SelectExpression();
         expr->isFunction = true;
         expr->name = std::move(name);
-        expr->nestedExpressions = {};
+        expr->nestedExpressions = new std::list<SelectExpression *>;
 
         return expr;
     }
