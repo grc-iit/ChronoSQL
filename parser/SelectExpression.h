@@ -13,21 +13,26 @@
 class SelectExpression {
 
 public:
+    hsql::ExprType type;
     bool isStar;
     bool isFunction;
     bool isColumn;
+    long value;
+    hsql::DatetimeField dateTime;
     std::string name;
     std::list<SelectExpression *> *nestedExpressions;
 
     static SelectExpression *starExpression() {
         auto *expr = new SelectExpression();
         expr->isStar = true;
+        expr->type = hsql::kExprStar;
 
         return expr;
     }
 
     static SelectExpression *functionExpression(std::string name) {
         auto *expr = new SelectExpression();
+        expr->type = hsql::kExprFunctionRef;
         expr->isFunction = true;
         expr->name = std::move(name);
         expr->nestedExpressions = new std::list<SelectExpression *>;
@@ -37,8 +42,25 @@ public:
 
     static SelectExpression *columnExpression(std::string name) {
         auto *expr = new SelectExpression();
+        expr->type = hsql::kExprColumnRef;
         expr->isColumn = true;
         expr->name = std::move(name);
+        return expr;
+    }
+
+    static SelectExpression *stringExpression(std::string name) {
+        auto *expr = new SelectExpression();
+        expr->type = hsql::kExprLiteralString;
+        expr->isColumn = false;
+        expr->name = std::move(name);
+        return expr;
+    }
+
+    static SelectExpression *intervalExpression(long value, hsql::DatetimeField dt) {
+        auto *expr = new SelectExpression();
+        expr->type = hsql::kExprLiteralInterval;
+        expr->value = value;
+        expr->dateTime = dt;
         return expr;
     }
 };

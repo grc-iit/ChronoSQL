@@ -9,6 +9,7 @@
 #include "SelectExpression.h"
 #include "ConditionExpression.h"
 #include "../exception/FieldNotFoundException.h"
+#include "../exception/InvalidWindowArgumentException.h"
 
 #ifndef CHRONOSQL_SQLPARSER_H
 #define CHRONOSQL_SQLPARSER_H
@@ -42,13 +43,13 @@ public:
 private:
     ChronoLog *chronoLog;
 
-    const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "SUM", "AVG"};
+    const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "SUM", "AVG", "WINDOW"};
 
     void printResults(std::list<const char *> *events) {
         int i = 0, isAggregate = 0;
         std::cout << std::endl;
 
-        if (events->size() == 2 && SUPPORTED_FUNCTIONS.count(events->front())) {
+        if (SUPPORTED_FUNCTIONS.count(events->front())) {
             isAggregate = 1;
             std::cout << events->front() << std::endl;
             events->pop_front();
@@ -126,24 +127,41 @@ private:
                     }
                 return chronoLog->replay(cid, startEID, endEID);
             } else if (e->isFunction) {
-                auto *value = new std::list<const char *>;
+                auto *value = new std::list<const char *>();
                 std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
                 if (SUPPORTED_FUNCTIONS.count(e->name)) {
                     value->push_back(e->name.c_str());
 
-                    auto results = executeExpressions(cid, e->nestedExpressions, conditions);
-
                     if (e->name == "COUNT") {
+                        auto results = executeExpressions(cid, e->nestedExpressions, conditions);
                         value->push_back(std::to_string(results->size()).c_str());
-                    } else if (e->name == "SUM") {
-                        // TODO what to add here??
-                        value->push_back(std::to_string(results->size()).c_str());
-                    } else {    // AVG
-                        // TODO what to avg???
-                        double avg = 0;
-//                        for ()
+                    } else if (e->name == "WINDOW") {
+                        if (e->nestedExpressions == nullptr || e->nestedExpressions->empty() ||
+                            e->nestedExpressions->front()->type != hsql::kExprLiteralInterval) {
+                            throw InvalidWindowArgumentException();
+                        }
+
+                        auto *expr = new std::list<SelectExpression *>;
+                        expr->push_back(SelectExpression::starExpression());
+                        auto *temp = executeExpressions(cid, expr, conditions);
+                        for (auto const &v: *temp) {
+                            std::string windowed("Window: " + std::string(v));
+                            std::cout << windowed.c_str() << std::endl;
+                            value->push_back(windowed.c_str());
+                        }
                     }
+//                    } else if (e->name == "SUM") {
+//                        // TODO what to add here??
+//                        value->push_back(std::to_string(results->size()).c_str());
+//                    } else {    // AVG
+//                        // TODO what to avg???
+//                        double avg = 0;
+////                        for ()
+//                    }
                     return value;
+                } else {
+                    // TODO handle error
+                    return {};
                 }
             } else {
                 // Handle logic
@@ -210,6 +228,10 @@ private:
                 function->nestedExpressions->push_back(parseSelectToken(e));
             }
             return function;
+        } else if (expr->type == hsql::kExprLiteralString) {
+            return SelectExpression::stringExpression(expr->name);
+        } else if (expr->type == hsql::kExprLiteralInterval) {
+            return SelectExpression::intervalExpression(expr->ival, expr->datetimeField);
         } else {
             std::cout << "Found unsupported select expression" << std::endl;
             return nullptr;
