@@ -145,9 +145,11 @@ private:
                         expr->push_back(SelectExpression::starExpression());
                         auto *temp = executeExpressions(cid, expr, conditions);
                         for (auto const &v: *temp) {
-                            std::string windowed("Window: " + std::string(v));
-                            std::cout << windowed.c_str() << std::endl;
-                            value->push_back(windowed.c_str());
+                            char *full_text;
+                            full_text = static_cast<char *>(malloc(strlen(v) + strlen("Window: ") + 1));
+                            strcpy(full_text, "Window: ");
+                            strcat(full_text, v);
+                            value->push_back(full_text);
                         }
                     }
 //                    } else if (e->name == "SUM") {
