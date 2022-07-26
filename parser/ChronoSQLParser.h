@@ -49,7 +49,7 @@ private:
         int i = 0, isAggregate = 0;
         std::cout << std::endl;
 
-        if (SUPPORTED_FUNCTIONS.count(events->front())) {
+        if (events->size() > 0 && SUPPORTED_FUNCTIONS.count(events->front())) {
             isAggregate = 1;
             std::cout << events->front() << std::endl;
             events->pop_front();
