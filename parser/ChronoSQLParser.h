@@ -51,7 +51,15 @@ private:
 
         if (events->size() > 0 && SUPPORTED_FUNCTIONS.count(events->front())) {
             isAggregate = 1;
-            std::cout << events->front() << std::endl;
+            const char *function = events->front();
+            events->pop_front();
+
+            if (events->front()[0] == '\0') {
+                std::cout << function << std::endl;
+            } else {
+                std::cout << events->front() << std::endl;
+            }
+
             events->pop_front();
         }
 
@@ -93,6 +101,9 @@ private:
         } catch (FieldNotFoundException &e) {
             std::cout << "ERROR: Field \"" << e.getField() << "\" does not exist" << std::endl;
             return -1;
+        } catch (InvalidWindowArgumentException &e) {
+            std::cout << e.what() << std::endl;
+            return -1;
         }
 
         printResults(results);
@@ -131,6 +142,12 @@ private:
                 std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
                 if (SUPPORTED_FUNCTIONS.count(e->name)) {
                     value->push_back(e->name.c_str());
+                    if (e->isAliased) {
+                        value->push_back(e->alias.c_str());
+                    } else {
+                        // Empty alias
+                        value->push_back("");
+                    }
 
                     if (e->name == "COUNT") {
                         auto results = executeExpressions(cid, e->nestedExpressions, conditions);
@@ -224,7 +241,7 @@ private:
             std::cout << " field " << expr->name;
             return SelectExpression::columnExpression(expr->name);
         } else if (expr->type == hsql::kExprFunctionRef) {
-            auto *function = SelectExpression::functionExpression(expr->name);
+            auto *function = SelectExpression::functionExpression(expr->name, expr->alias);
             for (hsql::Expr *e: *expr->exprList) {
                 // Do the same for each inner expression
                 function->nestedExpressions->push_back(parseSelectToken(e));

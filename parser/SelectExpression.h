@@ -17,9 +17,11 @@ public:
     bool isStar;
     bool isFunction;
     bool isColumn;
+    bool isAliased;
     long value;
     hsql::DatetimeField dateTime;
     std::string name;
+    std::string alias;
     std::list<SelectExpression *> *nestedExpressions;
 
     static SelectExpression *starExpression() {
@@ -30,12 +32,17 @@ public:
         return expr;
     }
 
-    static SelectExpression *functionExpression(std::string name) {
+    static SelectExpression *functionExpression(std::string name, const char *alias) {
         auto *expr = new SelectExpression();
         expr->type = hsql::kExprFunctionRef;
         expr->isFunction = true;
         expr->name = std::move(name);
         expr->nestedExpressions = new std::list<SelectExpression *>;
+
+        if (alias != nullptr) {
+            expr->alias = std::string(alias);
+            expr->isAliased = true;
+        }
 
         return expr;
     }
