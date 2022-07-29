@@ -10,6 +10,8 @@
 #include "ConditionExpression.h"
 #include "../exception/FieldNotFoundException.h"
 #include "../exception/InvalidWindowArgumentException.h"
+#include "../exception/InvalidAggregationException.h"
+#include "GroupByExpression.h"
 
 #ifndef CHRONOSQL_SQLPARSER_H
 #define CHRONOSQL_SQLPARSER_H
@@ -43,23 +45,16 @@ public:
 private:
     ChronoLog *chronoLog;
 
-    const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "SUM", "AVG", "WINDOW"};
+    const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "WINDOW"};
 
-    void printResults(std::list<const char *> *events) {
+    void printResults(std::list<const char *> *events, std::unordered_map<std::string, std::string> aliases) {
         int i = 0, isAggregate = 0;
         std::cout << std::endl;
 
-        if (events->size() > 0 && SUPPORTED_FUNCTIONS.count(events->front())) {
+        if (events->size() > 0 &&
+            (SUPPORTED_FUNCTIONS.count(events->front()) || SUPPORTED_FUNCTIONS.count(aliases[events->front()]))) {
             isAggregate = 1;
-            const char *function = events->front();
-            events->pop_front();
-
-            if (events->front()[0] == '\0') {
-                std::cout << function << std::endl;
-            } else {
-                std::cout << events->front() << std::endl;
-            }
-
+            std::cout << events->front() << std::endl;
             events->pop_front();
         }
 
@@ -76,9 +71,10 @@ private:
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
         auto *expressions = new std::list<SelectExpression *>;
+        std::unordered_map<std::string, std::string> aliases;
 
         for (hsql::Expr *expr: *statement->selectList) {
-            SelectExpression *e = parseSelectToken(expr);
+            SelectExpression *e = parseSelectToken(expr, aliases);
             if (e == nullptr) {
                 return -1;
             }
@@ -91,10 +87,16 @@ private:
             conditions = parseWhereExpression(statement->whereClause);
         }
 
+        std::list<GroupByExpression *> *groupByExpressions = {};
+        if (statement->groupBy != nullptr) {
+            groupByExpressions = parseGroupBy(statement->groupBy, aliases);
+        }
+
         std::list<const char *> *results;
 
         try {
-            results = executeExpressions(statement->fromTable->name, expressions, conditions);
+            results = executeExpressions(statement->fromTable->name, expressions, conditions, groupByExpressions,
+                                         aliases);
         } catch (ChronicleNotFoundException &e) {
             std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
             return -1;
@@ -102,17 +104,22 @@ private:
             std::cout << "ERROR: Field \"" << e.getField() << "\" does not exist" << std::endl;
             return -1;
         } catch (InvalidWindowArgumentException &e) {
-            std::cout << e.what() << std::endl;
+            printException(e);
+            return -1;
+        } catch (InvalidAggregationException &e) {
+            printException(e);
             return -1;
         }
 
-        printResults(results);
+        printResults(results, aliases);
 
         return 0;
     }
 
     std::list<const char *> *executeExpressions(const CID &cid, std::list<SelectExpression *> *expressions,
-                                                const std::list<ConditionExpression *> *conditions) {
+                                                const std::list<ConditionExpression *> *conditions,
+                                                const std::list<GroupByExpression *> *groupBy,
+                                                std::unordered_map<std::string, std::string> &aliases) {
         for (SelectExpression *e: *expressions) {
             if (e->isStar) {
                 EID startEID = VOID_TIMESTAMP;
@@ -141,16 +148,15 @@ private:
                 auto *value = new std::list<const char *>();
                 std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
                 if (SUPPORTED_FUNCTIONS.count(e->name)) {
-                    value->push_back(e->name.c_str());
                     if (e->isAliased) {
                         value->push_back(e->alias.c_str());
+                        aliases[e->alias] = e->name;    // Uppercase transformation
                     } else {
-                        // Empty alias
-                        value->push_back("");
+                        value->push_back(e->name.c_str());
                     }
 
                     if (e->name == "COUNT") {
-                        auto results = executeExpressions(cid, e->nestedExpressions, conditions);
+                        auto results = executeExpressions(cid, e->nestedExpressions, conditions, groupBy, aliases);
                         value->push_back(std::to_string(results->size()).c_str());
                     } else if (e->name == "WINDOW") {
                         if (e->nestedExpressions == nullptr || e->nestedExpressions->empty() ||
@@ -160,7 +166,7 @@ private:
 
                         auto *expr = new std::list<SelectExpression *>;
                         expr->push_back(SelectExpression::starExpression());
-                        auto *temp = executeExpressions(cid, expr, conditions);
+                        auto *temp = executeExpressions(cid, expr, conditions, groupBy, aliases);
                         for (auto const &v: *temp) {
                             char *full_text;
                             full_text = static_cast<char *>(malloc(strlen(v) + strlen("Window: ") + 1));
@@ -169,18 +175,9 @@ private:
                             value->push_back(full_text);
                         }
                     }
-//                    } else if (e->name == "SUM") {
-//                        // TODO what to add here??
-//                        value->push_back(std::to_string(results->size()).c_str());
-//                    } else {    // AVG
-//                        // TODO what to avg???
-//                        double avg = 0;
-////                        for ()
-//                    }
                     return value;
                 } else {
-                    // TODO handle error
-                    return {};
+                    throw InvalidAggregationException();
                 }
             } else {
                 // Handle logic
@@ -234,7 +231,7 @@ private:
         return nullptr;
     }
 
-    SelectExpression *parseSelectToken(hsql::Expr *expr) {
+    SelectExpression *parseSelectToken(hsql::Expr *expr, std::unordered_map<std::string, std::string> &aliases) {
         if (expr->type == hsql::kExprStar) {
             return SelectExpression::starExpression();
         } else if (expr->type == hsql::kExprColumnRef) {
@@ -242,9 +239,14 @@ private:
             return SelectExpression::columnExpression(expr->name);
         } else if (expr->type == hsql::kExprFunctionRef) {
             auto *function = SelectExpression::functionExpression(expr->name, expr->alias);
+
+            if (expr->hasAlias()) {
+                aliases[expr->alias] = expr->name;
+            }
+
             for (hsql::Expr *e: *expr->exprList) {
                 // Do the same for each inner expression
-                function->nestedExpressions->push_back(parseSelectToken(e));
+                function->nestedExpressions->push_back(parseSelectToken(e, aliases));
             }
             return function;
         } else if (expr->type == hsql::kExprLiteralString) {
@@ -255,6 +257,25 @@ private:
             std::cout << "Found unsupported select expression" << std::endl;
             return nullptr;
         }
+    }
+
+    static std::list<GroupByExpression *> *
+    parseGroupBy(hsql::GroupByDescription *groupBy, std::unordered_map<std::string, std::string> aliases) {
+        auto *result = new std::list<GroupByExpression *>;
+        for (hsql::Expr *expr: *groupBy->columns) {
+            std::string name = expr->name;
+            std::string alias = "";
+            if (aliases.count(name)) {
+                name = aliases[name];
+                alias = expr->name;
+            }
+            result->push_back(new GroupByExpression(name, alias));
+        }
+        return result;
+    }
+
+    static void printException(std::exception &e) {
+        std::cout << e.what() << std::endl;
     }
 };
 
