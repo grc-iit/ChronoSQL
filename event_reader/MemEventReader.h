@@ -20,8 +20,9 @@ public:
         return (dynamic_cast<KeyValueEvent *>(MemoryEventStorage::getEvents(cid)->back()))->getPayload();
     }
 
-    std::list<const char *> *readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
-        auto *eventsInRange = new std::list<const char *>;
+    std::list<std::pair<EID, const char *>> *
+    readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
+        auto *eventsInRange = new std::list<std::pair<EID, const char *>>;
         std::list<Event *> *events = MemoryEventStorage::getEvents(cid);
 
         if (events == nullptr) {
@@ -32,7 +33,7 @@ public:
             auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
             if ((start == VOID_TIMESTAMP || kvEvent->getTimestamp() >= start) &&
                 (end == VOID_TIMESTAMP || kvEvent->getTimestamp() <= end)) {
-                eventsInRange->push_back(kvEvent->getPayload());
+                eventsInRange->push_back(std::pair(kvEvent->getTimestamp(), kvEvent->getPayload()));
             }
 
             if (end != VOID_TIMESTAMP && kvEvent->getTimestamp() > end) {

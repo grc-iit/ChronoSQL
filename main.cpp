@@ -79,11 +79,11 @@ int main(int argc, char **argv) {
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<const char *> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+    std::list<std::pair<EID, const char *>> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
 
     int i = 0;
     for (auto &event: *events) {
-        std::cout << i++ << ": " << event << std::endl;
+        std::cout << i++ << ": " << event.second << std::endl;
     }
 
     // Debug dump

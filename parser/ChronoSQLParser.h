@@ -47,20 +47,22 @@ private:
 
     const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "WINDOW"};
 
-    void printResults(std::list<const char *> *events, std::unordered_map<std::string, std::string> aliases) {
+    void printResults(std::list<std::pair<EID, const char *>> *events,
+                      std::unordered_map<std::string, std::string> aliases) {
         int i = 0, isAggregate = 0;
         std::cout << std::endl;
 
         if (events->size() > 0 &&
-            (SUPPORTED_FUNCTIONS.count(events->front()) || SUPPORTED_FUNCTIONS.count(aliases[events->front()]))) {
+            (SUPPORTED_FUNCTIONS.count(events->front().second) ||
+             SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
             isAggregate = 1;
-            std::cout << events->front() << std::endl;
+            std::cout << events->front().second << std::endl;
             events->pop_front();
         }
 
         std::cout << "--------" << std::endl;
         for (auto &event: *events) {
-            std::cout << event << std::endl;
+            std::cout << event.second << std::endl;
             i++;
         }
 
@@ -92,7 +94,7 @@ private:
             groupByExpressions = parseGroupBy(statement->groupBy, aliases);
         }
 
-        std::list<const char *> *results;
+        std::list<std::pair<EID, const char *>> *results;
 
         try {
             results = executeExpressions(statement->fromTable->name, expressions, conditions, groupByExpressions,
@@ -116,48 +118,29 @@ private:
         return 0;
     }
 
-    std::list<const char *> *executeExpressions(const CID &cid, std::list<SelectExpression *> *expressions,
-                                                const std::list<ConditionExpression *> *conditions,
-                                                const std::list<GroupByExpression *> *groupBy,
-                                                std::unordered_map<std::string, std::string> &aliases) {
+    std::list<std::pair<EID, const char *>> *
+    executeExpressions(const CID &cid, std::list<SelectExpression *> *expressions,
+                       const std::list<ConditionExpression *> *conditions,
+                       const std::list<GroupByExpression *> *groupBy,
+                       std::unordered_map<std::string, std::string> &aliases) {
         for (SelectExpression *e: *expressions) {
             if (e->isStar) {
-                EID startEID = VOID_TIMESTAMP;
-                EID endEID = VOID_TIMESTAMP;
-                if (conditions != nullptr && !conditions->empty())
-                    for (auto cond: *conditions) {
-                        if (cond->fieldName == "EID") {
-                            if (cond->operatorType == hsql::kOpGreater) {
-                                startEID = cond->intValue + 1;
-                            } else if (cond->operatorType == hsql::kOpGreaterEq) {
-                                startEID = cond->intValue;
-                            } else if (cond->operatorType == hsql::kOpLess) {
-                                endEID = cond->intValue - 1;
-                            } else if (cond->operatorType == hsql::kOpLessEq) {
-                                endEID = cond->intValue;
-                            } else if (cond->operatorType == hsql::kOpEquals) {
-                                startEID = cond->intValue;
-                                endEID = cond->intValue;
-                            }
-                        } else {
-                            throw FieldNotFoundException(cond->fieldName);
-                        }
-                    }
-                return chronoLog->replay(cid, startEID, endEID);
+                auto interval = extractInterval(conditions);
+                return chronoLog->replay(cid, interval.first, interval.second);
             } else if (e->isFunction) {
-                auto *value = new std::list<const char *>();
+                auto *value = new std::list<std::pair<EID, const char *>>();
                 std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
                 if (SUPPORTED_FUNCTIONS.count(e->name)) {
                     if (e->isAliased) {
-                        value->push_back(e->alias.c_str());
+                        value->push_back(std::pair(0, e->alias.c_str()));
                         aliases[e->alias] = e->name;    // Uppercase transformation
                     } else {
-                        value->push_back(e->name.c_str());
+                        value->push_back(std::pair(0, e->name.c_str()));
                     }
 
                     if (e->name == "COUNT") {
                         auto results = executeExpressions(cid, e->nestedExpressions, conditions, groupBy, aliases);
-                        value->push_back(std::to_string(results->size()).c_str());
+                        value->push_back(std::pair(0, std::to_string(results->size()).c_str()));
                     } else if (e->name == "WINDOW") {
                         if (e->nestedExpressions == nullptr || e->nestedExpressions->empty() ||
                             e->nestedExpressions->front()->type != hsql::kExprLiteralInterval) {
@@ -169,10 +152,10 @@ private:
                         auto *temp = executeExpressions(cid, expr, conditions, groupBy, aliases);
                         for (auto const &v: *temp) {
                             char *full_text;
-                            full_text = static_cast<char *>(malloc(strlen(v) + strlen("Window: ") + 1));
+                            full_text = static_cast<char *>(malloc(strlen(v.second) + strlen("Window: ") + 1));
                             strcpy(full_text, "Window: ");
-                            strcat(full_text, v);
-                            value->push_back(full_text);
+                            strcat(full_text, v.second);
+                            value->push_back(std::pair(0, full_text));
                         }
                     }
                     return value;
@@ -185,6 +168,31 @@ private:
         }
 
         return {};
+    }
+
+    static std::pair<EID, EID> extractInterval(const std::list<ConditionExpression *> *conditions) {
+        EID startEID = VOID_TIMESTAMP;
+        EID endEID = VOID_TIMESTAMP;
+        if (conditions != nullptr && !conditions->empty())
+            for (auto cond: *conditions) {
+                if (cond->fieldName == "EID") {
+                    if (cond->operatorType == hsql::kOpGreater) {
+                        startEID = cond->intValue + 1;
+                    } else if (cond->operatorType == hsql::kOpGreaterEq) {
+                        startEID = cond->intValue;
+                    } else if (cond->operatorType == hsql::kOpLess) {
+                        endEID = cond->intValue - 1;
+                    } else if (cond->operatorType == hsql::kOpLessEq) {
+                        endEID = cond->intValue;
+                    } else if (cond->operatorType == hsql::kOpEquals) {
+                        startEID = cond->intValue;
+                        endEID = cond->intValue;
+                    }
+                } else {
+                    throw FieldNotFoundException(cond->fieldName);
+                }
+            }
+        return {startEID, endEID};
     }
 
     std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
@@ -264,7 +272,7 @@ private:
         auto *result = new std::list<GroupByExpression *>;
         for (hsql::Expr *expr: *groupBy->columns) {
             std::string name = expr->name;
-            std::string alias = "";
+            std::string alias;
             if (aliases.count(name)) {
                 name = aliases[name];
                 alias = expr->name;

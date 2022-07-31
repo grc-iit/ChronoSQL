@@ -15,7 +15,7 @@ public:
 
     virtual const char *readLastEvent(const CID &cid) { return nullptr; }
 
-    virtual std::list<const char *> *
+    virtual std::list<std::pair<EID, const char *>> *
     readEventsInRange(const CID &cid, std::time_t start, std::time_t end) { return {}; }
 
 protected:
