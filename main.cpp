@@ -59,11 +59,11 @@ int main(int argc, char **argv) {
 
     auto *writerFactory = new EventWriterFactory();
     EventWriter *eventWriter = writerFactory->getWriter(config);
-    const char *st0 = "0000000000";
-    const char *st2 = "1656881867";
+    const char *st0 = "1656796500";
     const char *st1 = "1656880867";
+    const char *st2 = "1656881867";
     const char *st3 = "1656882867";
-    const char *st4 = "9999999999";
+    const char *st4 = "1656969299";
 
     recordEvent(cid, st0, generator->generateRandomBytes(config->payloadSize), eventWriter);
     recordEvent(cid, st1, generator->generateRandomBytes(config->payloadSize), eventWriter);

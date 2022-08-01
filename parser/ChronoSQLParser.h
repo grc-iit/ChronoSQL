@@ -44,25 +44,30 @@ public:
 
 private:
     ChronoLog *chronoLog;
+    static std::unordered_map<hsql::DatetimeField, long> intervalConversions;
 
     const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "WINDOW"};
 
     void printResults(std::list<std::pair<EID, const char *>> *events,
-                      std::unordered_map<std::string, std::string> aliases) {
-        int i = 0, isAggregate = 0;
+                      std::unordered_map<std::string, std::string> aliases, std::list<GroupByExpression *> *groupBy) {
+        int i = 0, isAggregate = 0, isWindow = 0;
         std::cout << std::endl;
 
         if (events->size() > 0 &&
             (SUPPORTED_FUNCTIONS.count(events->front().second) ||
              SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
             isAggregate = 1;
+            isWindow = events->front().second == "WINDOW" || aliases[events->front().second] == "WINDOW";
+
             std::cout << events->front().second << std::endl;
+
             events->pop_front();
         }
 
-        std::cout << "--------" << std::endl;
+        std::cout << "----------" << std::endl;
         for (auto &event: *events) {
-            std::cout << event.second << std::endl;
+            std::string windowValue = isWindow ? std::to_string(event.first) : "";
+            std::cout << windowValue << "     " << event.second << std::endl;
             i++;
         }
 
@@ -72,7 +77,7 @@ private:
     }
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
-        auto *expressions = new std::list<SelectExpression *>;
+        auto *expressions = new std::vector<SelectExpression *>;
         std::unordered_map<std::string, std::string> aliases;
 
         for (hsql::Expr *expr: *statement->selectList) {
@@ -97,7 +102,7 @@ private:
         std::list<std::pair<EID, const char *>> *results;
 
         try {
-            results = executeExpressions(statement->fromTable->name, expressions, conditions, groupByExpressions,
+            results = executeExpressions(statement->fromTable->name, expressions, conditions, *groupByExpressions,
                                          aliases);
         } catch (ChronicleNotFoundException &e) {
             std::cout << "ERROR: Chronicle \"" << statement->fromTable->name << "\" does not exist" << std::endl;
@@ -113,15 +118,15 @@ private:
             return -1;
         }
 
-        printResults(results, aliases);
+        printResults(results, aliases, groupByExpressions);
 
         return 0;
     }
 
     std::list<std::pair<EID, const char *>> *
-    executeExpressions(const CID &cid, std::list<SelectExpression *> *expressions,
+    executeExpressions(const CID &cid, std::vector<SelectExpression *> *expressions,
                        const std::list<ConditionExpression *> *conditions,
-                       const std::list<GroupByExpression *> *groupBy,
+                       std::list<GroupByExpression *> &groupBy,
                        std::unordered_map<std::string, std::string> &aliases) {
         for (SelectExpression *e: *expressions) {
             if (e->isStar) {
@@ -147,15 +152,21 @@ private:
                             throw InvalidWindowArgumentException();
                         }
 
-                        auto *expr = new std::list<SelectExpression *>;
-                        expr->push_back(SelectExpression::starExpression());
-                        auto *temp = executeExpressions(cid, expr, conditions, groupBy, aliases);
-                        for (auto const &v: *temp) {
-                            char *full_text;
-                            full_text = static_cast<char *>(malloc(strlen(v.second) + strlen("Window: ") + 1));
-                            strcpy(full_text, "Window: ");
-                            strcat(full_text, v.second);
-                            value->push_back(std::pair(0, full_text));
+                        if (!groupBy.empty()) {
+                            std::transform(groupBy.front()->name.begin(), groupBy.front()->name.end(),
+                                           groupBy.front()->name.begin(), ::toupper);
+
+                            if (!groupBy.empty() && groupBy.front()->name == "WINDOW") {
+                                groupBy.front()->expression = SelectExpression::intervalExpression(
+                                        e->nestedExpressions->front()->value, e->nestedExpressions->front()->dateTime);
+                            }
+
+                            if (expressions->size() > 1 && expressions->at(1)->isFunction) {
+                                executeWindow(cid, conditions, groupBy, *value, expressions->at(1));
+                            } else {
+                                executeWindow(cid, conditions, groupBy, *value, nullptr);
+                            }
+
                         }
                     }
                     return value;
@@ -173,7 +184,7 @@ private:
     static std::pair<EID, EID> extractInterval(const std::list<ConditionExpression *> *conditions) {
         EID startEID = VOID_TIMESTAMP;
         EID endEID = VOID_TIMESTAMP;
-        if (conditions != nullptr && !conditions->empty())
+        if (conditions != nullptr && !conditions->empty()) {
             for (auto cond: *conditions) {
                 if (cond->fieldName == "EID") {
                     if (cond->operatorType == hsql::kOpGreater) {
@@ -192,7 +203,56 @@ private:
                     throw FieldNotFoundException(cond->fieldName);
                 }
             }
+        }
         return {startEID, endEID};
+    }
+
+    static long getIntervalSeconds(SelectExpression *interval) {
+        return interval->value * intervalConversions[interval->dateTime];
+    }
+
+    void executeWindow(const CID &cid, const std::list<ConditionExpression *> *conditions,
+                       std::list<GroupByExpression *> &groupBy, std::list<std::pair<EID, const char *>> &value,
+                       SelectExpression *aggregate) {
+        auto interval = extractInterval(conditions);
+        auto events = chronoLog->replay(cid, interval.first, interval.second);
+
+        if (!events->empty()) {
+            long intervalSize = getIntervalSeconds(groupBy.front()->expression);
+            long currentAgg = 0;
+            EID intervalStart = events->front().first;
+            EID intervalEnd = intervalStart + intervalSize;
+
+            for (auto ev: *events) {
+                if (ev.first >= intervalEnd) {
+                    if (aggregate != nullptr) {
+                        int charsRequired = snprintf(nullptr, 0, "%ld", currentAgg) + 1;
+                        char *aggChar = static_cast<char *>(malloc(charsRequired));
+                        snprintf(aggChar, charsRequired, "%ld", currentAgg);
+                        value.push_back({intervalStart, aggChar});
+                        currentAgg = 0;
+                    }
+
+                    while (intervalEnd < ev.first) {
+                        intervalStart = intervalEnd;
+                        intervalEnd = intervalEnd + intervalSize;
+                    }
+                }
+
+                if (aggregate == nullptr) {
+                    value.push_back({intervalStart, ev.second});
+                } else {
+                    currentAgg++;
+                }
+            }
+
+            if (aggregate != nullptr) {
+                int charsRequired = snprintf(nullptr, 0, "%ld", currentAgg) + 1;
+                char *aggChar = static_cast<char *>(malloc(charsRequired));
+                snprintf(aggChar, charsRequired, "%ld", currentAgg);
+                value.push_back({intervalStart, aggChar});
+            }
+        }
     }
 
     std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
@@ -286,6 +346,13 @@ private:
         std::cout << e.what() << std::endl;
     }
 };
+
+std::unordered_map<hsql::DatetimeField, long> ChronoSQLParser::intervalConversions = {{hsql::kDatetimeSecond, 1},
+                                                                                      {hsql::kDatetimeMinute, 60},
+                                                                                      {hsql::kDatetimeHour,   3600},
+                                                                                      {hsql::kDatetimeDay,    86400},
+                                                                                      {hsql::kDatetimeMonth,  2626288},
+                                                                                      {hsql::kDatetimeYear,   31536000}};
 
 
 #endif //CHRONOSQL_SQLPARSER_H

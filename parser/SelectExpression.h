@@ -22,7 +22,7 @@ public:
     hsql::DatetimeField dateTime;
     std::string name;
     std::string alias;
-    std::list<SelectExpression *> *nestedExpressions;
+    std::vector<SelectExpression *> *nestedExpressions;
 
     static SelectExpression *starExpression() {
         auto *expr = new SelectExpression();
@@ -37,7 +37,7 @@ public:
         expr->type = hsql::kExprFunctionRef;
         expr->isFunction = true;
         expr->name = std::move(name);
-        expr->nestedExpressions = new std::list<SelectExpression *>;
+        expr->nestedExpressions = new std::vector<SelectExpression *>;
 
         if (alias != nullptr) {
             expr->alias = std::string(alias);

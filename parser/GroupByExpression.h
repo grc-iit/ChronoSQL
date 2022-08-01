@@ -7,12 +7,15 @@
 
 
 #include <string>
+#include "SQLParser.h"
+#include "SelectExpression.h"
 
 class GroupByExpression {
 
 public:
     std::string name;
     std::string alias;
+    SelectExpression *expression;
 
     GroupByExpression(std::string _name, std::string _alias) : name(std::move(_name)), alias(std::move(_alias)) {}
 
