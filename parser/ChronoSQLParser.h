@@ -12,6 +12,8 @@
 #include "../exception/InvalidWindowArgumentException.h"
 #include "../exception/InvalidAggregationException.h"
 #include "GroupByExpression.h"
+#include "EventInterval.h"
+#include "../exception/UnrecognizedDayOfTheWeek.h"
 
 #ifndef CHRONOSQL_SQLPARSER_H
 #define CHRONOSQL_SQLPARSER_H
@@ -38,13 +40,14 @@ public:
                 }
             }
         } else {
-            std::cout << "Error parsing statement" << std::endl;
+            std::cout << "Error parsing statement: " << result.errorMsg() << std::endl;
         }
     }
 
 private:
     ChronoLog *chronoLog;
     static std::unordered_map<hsql::DatetimeField, long> intervalConversions;
+    static std::unordered_map<std::string, Enumerations::DayOfTheWeek> daysOfTheWeek;
 
     const std::set<std::string> SUPPORTED_FUNCTIONS = {"COUNT", "WINDOW"};
 
@@ -116,6 +119,9 @@ private:
         } catch (InvalidAggregationException &e) {
             printException(e);
             return -1;
+        } catch (UnrecognizedDayOfTheWeek &e) {
+            printException(e);
+            return -1;
         }
 
         printResults(results, aliases, groupByExpressions);
@@ -131,7 +137,18 @@ private:
         for (SelectExpression *e: *expressions) {
             if (e->isStar) {
                 auto interval = extractInterval(conditions);
-                return chronoLog->replay(cid, interval.first, interval.second);
+                if (interval->days.empty()) {
+                    return chronoLog->replay(cid, interval->startEID, interval->endEID);
+                } else {
+                    auto events = chronoLog->replay(cid, interval->startEID, interval->endEID);
+                    auto *value = new std::list<std::pair<EID, const char *>>();
+                    for (auto ev: *events) {
+                        if (eventMeetsDaysOfTheWeek(ev, interval->days)) {
+                            value->push_back(ev);
+                        }
+                    }
+                    return value;
+                }
             } else if (e->isFunction) {
                 auto *value = new std::list<std::pair<EID, const char *>>();
                 std::transform(e->name.begin(), e->name.end(), e->name.begin(), ::toupper);
@@ -181,30 +198,40 @@ private:
         return {};
     }
 
-    static std::pair<EID, EID> extractInterval(const std::list<ConditionExpression *> *conditions) {
-        EID startEID = VOID_TIMESTAMP;
-        EID endEID = VOID_TIMESTAMP;
+    static EventInterval *extractInterval(const std::list<ConditionExpression *> *conditions) {
+        auto interval = new EventInterval();
+
         if (conditions != nullptr && !conditions->empty()) {
             for (auto cond: *conditions) {
                 if (cond->fieldName == "EID") {
                     if (cond->operatorType == hsql::kOpGreater) {
-                        startEID = cond->intValue + 1;
+                        interval->startEID = cond->intValue + 1;
                     } else if (cond->operatorType == hsql::kOpGreaterEq) {
-                        startEID = cond->intValue;
+                        interval->startEID = cond->intValue;
                     } else if (cond->operatorType == hsql::kOpLess) {
-                        endEID = cond->intValue - 1;
+                        interval->endEID = cond->intValue - 1;
                     } else if (cond->operatorType == hsql::kOpLessEq) {
-                        endEID = cond->intValue;
+                        interval->endEID = cond->intValue;
                     } else if (cond->operatorType == hsql::kOpEquals) {
-                        startEID = cond->intValue;
-                        endEID = cond->intValue;
+                        if (cond->stringValue.empty()) {
+                            interval->startEID = cond->intValue;
+                            interval->endEID = cond->intValue;
+                        } else {
+                            std::transform(cond->stringValue.begin(), cond->stringValue.end(),
+                                           cond->stringValue.begin(), ::toupper);
+                            if (daysOfTheWeek.count(cond->stringValue)) {
+                                interval->days.push_back(daysOfTheWeek[cond->stringValue]);
+                            } else {
+                                throw UnrecognizedDayOfTheWeek();
+                            }
+                        }
                     }
                 } else {
                     throw FieldNotFoundException(cond->fieldName);
                 }
             }
         }
-        return {startEID, endEID};
+        return interval;
     }
 
     static long getIntervalSeconds(SelectExpression *interval) {
@@ -215,7 +242,7 @@ private:
                        std::list<GroupByExpression *> &groupBy, std::list<std::pair<EID, const char *>> &value,
                        SelectExpression *aggregate) {
         auto interval = extractInterval(conditions);
-        auto events = chronoLog->replay(cid, interval.first, interval.second);
+        auto events = chronoLog->replay(cid, interval->startEID, interval->endEID);
 
         if (!events->empty()) {
             long intervalSize = getIntervalSeconds(groupBy.front()->expression);
@@ -224,6 +251,10 @@ private:
             EID intervalEnd = intervalStart + intervalSize;
 
             for (auto ev: *events) {
+                if (!eventMeetsDaysOfTheWeek(ev, interval->days)) {
+                    continue;
+                }
+
                 if (ev.first >= intervalEnd) {
                     if (aggregate != nullptr) {
                         value.push_back({intervalStart, longToChar(currentAgg)});
@@ -245,6 +276,24 @@ private:
                 value.push_back({intervalStart, longToChar(currentAgg)});
             }
         }
+    }
+
+    static bool
+    eventMeetsDaysOfTheWeek(std::pair<EID, const char *> ev, const std::list<Enumerations::DayOfTheWeek> &dows) {
+        for (Enumerations::DayOfTheWeek dow: dows) {
+            std::cout << (int) dow << std::endl;
+            if (extractDayOfTheWeek(ev.first) != dow) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static Enumerations::DayOfTheWeek extractDayOfTheWeek(EID eid) {
+        // Assumption: day of the week is in UTC
+        // January 1, 1970, 00.00 was Thursday, 86400 seconds in a day
+        int dow = (static_cast<long>(floor(eid / 86400)) + 4) % 7;
+        return (Enumerations::DayOfTheWeek) dow;
     }
 
     std::list<ConditionExpression *> *parseWhereExpression(const hsql::Expr *expression) {
@@ -352,6 +401,10 @@ std::unordered_map<hsql::DatetimeField, long> ChronoSQLParser::intervalConversio
                                                                                       {hsql::kDatetimeDay,    86400},
                                                                                       {hsql::kDatetimeMonth,  2626288},
                                                                                       {hsql::kDatetimeYear,   31536000}};
+std::unordered_map<std::string, Enumerations::DayOfTheWeek> ChronoSQLParser::daysOfTheWeek = {
+        {"SUNDAY", DayOfTheWeek::SUNDAY}, {"MONDAY", DayOfTheWeek::MONDAY}, {"TUESDAY", DayOfTheWeek::TUESDAY},
+        {"WEDNESDAY", DayOfTheWeek::WEDNESDAY}, {"THURSDAY", DayOfTheWeek::THURSDAY}, {"FRIDAY", DayOfTheWeek::FRIDAY},
+        {"SATURDAY", DayOfTheWeek::SATURDAY}};
 
 
 #endif //CHRONOSQL_SQLPARSER_H

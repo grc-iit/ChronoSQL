@@ -14,6 +14,10 @@ namespace Enumerations {
         FIXED_KEY_VALUE, MEMORY_KEY_VALUE, INDEXED_KEY_VALUE
     };
 
+    enum class DayOfTheWeek {
+        SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+    };
+
     // Map to associate string values to the enum EventType
     static std::unordered_map<std::string, EventType> const EventTypeValues =
             {{"FIXED_KEY_VALUE",   EventType::FIXED_KEY_VALUE},
