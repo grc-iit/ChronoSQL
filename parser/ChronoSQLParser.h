@@ -57,7 +57,7 @@ private:
             (SUPPORTED_FUNCTIONS.count(events->front().second) ||
              SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
             isAggregate = 1;
-            isWindow = events->front().second == "WINDOW" || aliases[events->front().second] == "WINDOW";
+            isWindow = (strcmp(events->front().second, "WINDOW") == 0) || aliases[events->front().second] == "WINDOW";
 
             std::cout << events->front().second << std::endl;
 
@@ -66,8 +66,8 @@ private:
 
         std::cout << "----------" << std::endl;
         for (auto &event: *events) {
-            std::string windowValue = isWindow ? std::to_string(event.first) : "";
-            std::cout << windowValue << "     " << event.second << std::endl;
+            std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
+            std::cout << windowValue << event.second << std::endl;
             i++;
         }
 
@@ -230,7 +230,7 @@ private:
                         currentAgg = 0;
                     }
 
-                    intervalStart = intervalStart + (ev.first - intervalEnd) / intervalSize;
+                    intervalStart = intervalEnd + trunc((ev.first - intervalEnd) / intervalSize) * intervalSize;
                     intervalEnd = intervalStart + intervalSize;
                 }
 

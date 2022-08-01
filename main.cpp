@@ -64,12 +64,14 @@ int main(int argc, char **argv) {
     const char *st2 = "1656881867";
     const char *st3 = "1656882867";
     const char *st4 = "1656969299";
+    const char *st5 = "1657055699";
 
     recordEvent(cid, st0, generator->generateRandomBytes(config->payloadSize), eventWriter);
     recordEvent(cid, st1, generator->generateRandomBytes(config->payloadSize), eventWriter);
     recordEvent(cid, st2, generator->generateRandomBytes(config->payloadSize), eventWriter);
     recordEvent(cid, st3, generator->generateRandomBytes(config->payloadSize), eventWriter);
     recordEvent(cid, st4, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st5, generator->generateRandomBytes(config->payloadSize), eventWriter);
 //    log->record(cid, generator->generateRandomBytes(config->payloadSize));
 //    log->record(cid, generator->generateRandomBytes(config->payloadSize));
 //    log->record(cid, generator->generateRandomBytes(config->payloadSize));
