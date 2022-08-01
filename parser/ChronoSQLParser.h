@@ -226,17 +226,12 @@ private:
             for (auto ev: *events) {
                 if (ev.first >= intervalEnd) {
                     if (aggregate != nullptr) {
-                        int charsRequired = snprintf(nullptr, 0, "%ld", currentAgg) + 1;
-                        char *aggChar = static_cast<char *>(malloc(charsRequired));
-                        snprintf(aggChar, charsRequired, "%ld", currentAgg);
-                        value.push_back({intervalStart, aggChar});
+                        value.push_back({intervalStart, longToChar(currentAgg)});
                         currentAgg = 0;
                     }
 
-                    while (intervalEnd < ev.first) {
-                        intervalStart = intervalEnd;
-                        intervalEnd = intervalEnd + intervalSize;
-                    }
+                    intervalStart = intervalStart + (ev.first - intervalEnd) / intervalSize;
+                    intervalEnd = intervalStart + intervalSize;
                 }
 
                 if (aggregate == nullptr) {
@@ -247,10 +242,7 @@ private:
             }
 
             if (aggregate != nullptr) {
-                int charsRequired = snprintf(nullptr, 0, "%ld", currentAgg) + 1;
-                char *aggChar = static_cast<char *>(malloc(charsRequired));
-                snprintf(aggChar, charsRequired, "%ld", currentAgg);
-                value.push_back({intervalStart, aggChar});
+                value.push_back({intervalStart, longToChar(currentAgg)});
             }
         }
     }
@@ -344,6 +336,13 @@ private:
 
     static void printException(std::exception &e) {
         std::cout << e.what() << std::endl;
+    }
+
+    static const char *longToChar(long value) {
+        int charsRequired = snprintf(nullptr, 0, "%ld", value) + 1;
+        char *stringValue = static_cast<char *>(malloc(charsRequired));
+        snprintf(stringValue, charsRequired, "%ld", value);
+        return stringValue;
     }
 };
 
