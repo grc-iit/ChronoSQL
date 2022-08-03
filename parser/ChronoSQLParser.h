@@ -281,12 +281,11 @@ private:
     static bool
     eventMeetsDaysOfTheWeek(std::pair<EID, const char *> ev, const std::list<Enumerations::DayOfTheWeek> &dows) {
         for (Enumerations::DayOfTheWeek dow: dows) {
-            std::cout << (int) dow << std::endl;
-            if (extractDayOfTheWeek(ev.first) != dow) {
-                return false;
+            if (extractDayOfTheWeek(ev.first) == dow) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     static Enumerations::DayOfTheWeek extractDayOfTheWeek(EID eid) {
