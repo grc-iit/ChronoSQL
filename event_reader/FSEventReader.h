@@ -7,29 +7,15 @@
 
 
 #include "EventReader.h"
+#include "DiskEventReader.h"
 
 #include <utility>
 #include <iostream>
 
-class FSEventReader : public EventReader {
+class FSEventReader : public DiskEventReader {
 
 public:
-    explicit FSEventReader(int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {
-    }
-
-    const char *readLastEvent(const CID &cid) override {
-        std::ifstream file = openReadFile(cid + LOG_EXTENSION);
-        int fileSize = (int) file.tellg();
-
-        if (fileSize > fixedPayloadSize) {
-            char *data = new char[fixedPayloadSize + 1];
-            file.seekg(fileSize - fixedPayloadSize - 1);
-            file.get(data, fixedPayloadSize + 1);
-            return data;
-        }
-
-        return nullptr;
-    }
+    explicit FSEventReader(int fixedPayloadSize_) : DiskEventReader(fixedPayloadSize_) {}
 
     std::list<std::pair<EID, const char *>> *
     readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
@@ -67,9 +53,6 @@ public:
 
         return events;
     }
-
-private:
-    int fixedPayloadSize;
 };
 
 
