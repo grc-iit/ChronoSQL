@@ -18,16 +18,13 @@ using namespace Constants;
 class FSEventReaderFactory {
 
 public:
-    FSEventReaderFactory(const ConfigurationValues *config) : fixedPayloadSize(config->fixedPayloadSize) {
-        logfile = config->outputFile + LOG_EXTENSION;
-    }
+    FSEventReaderFactory(const ConfigurationValues *config) : fixedPayloadSize(config->fixedPayloadSize) {}
 
     [[nodiscard]] EventReader *getReader() const {
         return new FSEventReader(fixedPayloadSize);
     }
 
 private:
-    std::string logfile;
     int fixedPayloadSize;
 };
 

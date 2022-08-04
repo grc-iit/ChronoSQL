@@ -10,6 +10,7 @@
 #include "../config/ConfigurationValues.h"
 #include "FSEventReaderFactory.h"
 #include "MemEventReaderFactory.h"
+#include "IndexedEventReaderFactory.h"
 
 class EventReaderFactory {
 
@@ -21,6 +22,9 @@ public:
         } else if (config->eventType == EventType::MEMORY_KEY_VALUE) {
             auto *memFactory = new MemEventReaderFactory(config);
             return memFactory->getReader();
+        } else if (config->eventType == EventType::INDEXED_KEY_VALUE) {
+            auto *indexedFactory = new IndexedEventReaderFactory(config);
+            return indexedFactory->getReader();
         } else {
             return nullptr;
         }
