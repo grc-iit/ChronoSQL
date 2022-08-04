@@ -23,6 +23,9 @@ public:
     int payloadSize = 0;
     int payloadVariation = 0;
     int fixedPayloadSize = 0;
+
+    // Indexing configuration
+    int indexIntervalBytes = 4096;
 };
 
 

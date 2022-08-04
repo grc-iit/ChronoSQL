@@ -15,14 +15,16 @@ class IndexedKeyValueEventWriterFactory {
 
 public:
     explicit IndexedKeyValueEventWriterFactory(const ConfigurationValues *configurationManager) :
-            m_output_file(configurationManager->outputFile) {}
+            payloadSize(configurationManager->payloadSize),
+            indexIntervalBytes(configurationManager->indexIntervalBytes) {}
 
     [[nodiscard]] EventWriter *getWriter() const {
-        return new IndexedKeyValueEventWriter(this->m_output_file);
+        return new IndexedKeyValueEventWriter(this->payloadSize, this->indexIntervalBytes);
     }
 
 private:
-    std::string m_output_file;
+    int payloadSize;
+    int indexIntervalBytes;
 };
 
 

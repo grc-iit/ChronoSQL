@@ -79,17 +79,19 @@ int main(int argc, char **argv) {
 //    log->record(cid, generator->generateRandomBytes(config->payloadSize));
     std::cout << log->playback(cid) << std::endl;
 
+    std::cout << "Closest: " << MemoryIndex::getClosestValue(1656881867) << std::endl;
+
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<std::pair<EID, const char *>> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
-
-    int i = 0;
-    for (auto &event: *events) {
-        std::cout << i++ << ": " << event.second << std::endl;
-    }
+//    std::list<std::pair<EID, const char *>> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+//
+//    int i = 0;
+//    for (auto &event: *events) {
+//        std::cout << i++ << ": " << event.second << std::endl;
+//    }
 
     // Debug dump
-    MemoryEventStorage::dumpContents();
+//    MemoryEventStorage::dumpContents();
 
     return mainLoop(config);
 }

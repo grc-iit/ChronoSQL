@@ -11,25 +11,28 @@
 #include "EventWriter.h"
 #include "../common/Constants.h"
 #include "../event/KeyValueEvent.h"
+#include "EventWriterUtils.h"
+#include "../common/MemoryIndex.h"
 
 using namespace Constants;
 
 class IndexedKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit IndexedKeyValueEventWriter(std::string output_file) {
-//        m_output_file = std::move(output_file);
-//        eventFile = m_output_file + '.' + LOG_EXTENSION;
-//        indexFile = m_output_file + '.' + index_file_extension;
+    explicit IndexedKeyValueEventWriter(int _fixedPayloadSize, int _indexIntervalBytes) : fixedPayloadSize(
+            _fixedPayloadSize), indexIntervalBytes(_indexIntervalBytes) {
+        writerUtils = new EventWriterUtils(_fixedPayloadSize);
     }
 
     int write(const CID &cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
             std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
-            std::ofstream outputIndexFile = openWriteFile(indexFile);
-            writeToOutputFile(outputFile, outputIndexFile, kvEvent->getTimestamp(), kvEvent->getPayload());
+            writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
             outputFile.close();
+
+            updateIndex(cid, kvEvent);
+
             return 0;
         }
 
@@ -38,11 +41,12 @@ public:
 
     int write(const CID &cid, std::list<Event *> events) override {
         std::ofstream outputFile = openWriteFile(cid + LOG_EXTENSION);
-        std::ofstream outputIndexFile = openWriteFile(indexFile);
+        std::ofstream outputIndexFile = openWriteFile(cid + INDEX_EXTENSION);
         for (auto const i: events) {
             auto *kvEvent = dynamic_cast<KeyValueEvent *>(i);
             if (kvEvent != nullptr) {
-                writeToOutputFile(outputFile, outputIndexFile, kvEvent->getTimestamp(), kvEvent->getPayload());
+                writeToOutputFile(outputFile, kvEvent->getTimestamp(), kvEvent->getPayload());
+                updateIndex(cid, kvEvent);
             }
         }
         outputFile.close();
@@ -51,15 +55,39 @@ public:
     }
 
 private:
-    const std::string index_file_extension = "index";
-    std::string indexFile;
+    const int fixedPayloadSize;
+    long currentByteCount = 0;
+    long totalByteCount = 0;
+    long indexIntervalBytes;
+    EventWriterUtils *writerUtils;
 
-    void
-    writeToOutputFile(std::ofstream &outFile, std::ofstream &indexOutFile, std::time_t timestamp, const char *payload) {
-        int payloadSize = std::strlen(payload);
-        outFile.tellp();
+    void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, const char *payload) {
+        outFile << timestamp << ',' << writerUtils->trimByteSequence(payload) << ';';
+    }
 
-        std::cout << "HEYYY:" << outFile.tellp() << std::endl;
+    void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, long byteCount) {
+        outFile << timestamp << ',' << byteCount << ';';
+    }
+
+    // Updates the index file whenever the number of unindexed bytes is greater than the threshold
+    void updateIndex(const CID &cid, KeyValueEvent *kvEvent) {
+        // Size equals size of EID, size of payload + one comma + one semicolon
+        int eventSize = fixedPayloadSize + getNumberOfDigits(kvEvent->getTimestamp()) + 2;
+        std::cout << eventSize << std::endl;
+        if (currentByteCount + eventSize >= indexIntervalBytes) {
+            MemoryIndex::addEntry(kvEvent->getTimestamp(), totalByteCount);
+            std::ofstream outputIndexFile = openWriteFile(cid + INDEX_EXTENSION);
+            writeToOutputFile(outputIndexFile, kvEvent->getTimestamp(), totalByteCount);
+            outputIndexFile.close();
+            currentByteCount = 0;
+        } else {
+            currentByteCount += eventSize;
+        }
+        totalByteCount += eventSize;
+    }
+
+    static int getNumberOfDigits(long i) {
+        return i > 0 ? (int) log10((double) i) + 1 : 1;
     }
 };
 

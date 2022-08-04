@@ -15,6 +15,7 @@ namespace ConfigConstants {
     const char *PAYLOAD_SIZE = "PAYLOAD_SIZE";
     const char *PAYLOAD_VARIATION = "PAYLOAD_VARIATION";
     const char *FIXED_PAYLOAD_SIZE = "FIXED_PAYLOAD_SIZE";
+    const char *INDEX_INTERVAL_BYTES = "INDEX_INTERVAL_BYTES";
 }
 
 #endif //ChronoSQL_CONFIGCONSTANTS_H

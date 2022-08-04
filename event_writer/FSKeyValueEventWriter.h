@@ -12,13 +12,16 @@
 #include "EventWriter.h"
 #include "../common/Constants.h"
 #include "../event/KeyValueEvent.h"
+#include "EventWriterUtils.h"
 
 using namespace Constants;
 
 class FSKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit FSKeyValueEventWriter(int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {}
+    explicit FSKeyValueEventWriter(int _fixedPayloadSize) : fixedPayloadSize(_fixedPayloadSize) {
+        writerUtils = new EventWriterUtils(_fixedPayloadSize);
+    }
 
     int write(const CID &cid, Event *event) override {
         KeyValueEvent *kvEvent = toKeyValue(event);
@@ -46,41 +49,15 @@ public:
     }
 
 private:
-    int fixedPayloadSize;
+    const int fixedPayloadSize;
+    EventWriterUtils *writerUtils;
 
     static KeyValueEvent *toKeyValue(Event *event) {
-        // TODO is this ok?
         return dynamic_cast<KeyValueEvent *>(event);
     }
 
     void writeToOutputFile(std::ofstream &outFile, std::time_t timestamp, const char *payload) {
-        outFile << timestamp << ',' << trimByteSequence(payload) << ';';
-    }
-
-    const char *trimByteSequence(const char *payload) const {
-        int receivedSize = strlen(payload);
-
-        if (receivedSize == fixedPayloadSize) {
-            return payload;
-        }
-
-        char *trimmed = new char[fixedPayloadSize + 1]; // Null terminating character (+1)
-
-        if (receivedSize < fixedPayloadSize) {
-            // Copy the source sequence
-            strncpy(trimmed, payload, receivedSize);
-            // And pad with whitespaces at the end
-            for (int i = receivedSize; i < fixedPayloadSize; i++) {
-                trimmed[i] = ' ';
-            }
-        } else {
-            // Copy only until we reach the max size
-            strncpy(trimmed, payload, fixedPayloadSize);
-        }
-        // Terminate with the null char
-        trimmed[fixedPayloadSize] = '\0';
-
-        return trimmed;
+        outFile << timestamp << ',' << writerUtils->trimByteSequence(payload) << ';';
     }
 };
 
