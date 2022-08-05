@@ -1,13 +1,24 @@
 #include <iostream>
 #include <unistd.h>
 #include "config/ConfigurationManager.h"
-#include "eventGenerator/EventGeneratorFactory.h"
+#include "event_generator/EventGeneratorFactory.h"
 #include "chronolog/ChronoLog.h"
+#include "parser/ChronoSQLParser.h"
 
-int mainLoop() {
+void recordEvent(const CID &cid, const char *eid, const char *payload, EventWriter *eventWriter) {
+    eventWriter->write(cid, new KeyValueEvent((time_t) strtol(eid, nullptr, 10),
+                                              payload));
+}
+
+void recordEvent(const CID &cid, const char *payload, EventWriter *eventWriter) {
+    eventWriter->write(cid, new KeyValueEvent(std::time(nullptr), payload));
+}
+
+int mainLoop(ConfigurationValues *config) {
+    auto *parser = new ChronoSQLParser(config);
     std::string command;
 
-    std::cout << "ChronoSQL version 0.0.1" << std::endl << "Type \"help\" for help." << std::endl;
+    std::cout << "ChronoSQL version 1.0.0" << std::endl << "Type \"help\" for help." << std::endl;
 
     while (true) {
         if (isatty(STDIN_FILENO)) {
@@ -23,6 +34,8 @@ int mainLoop() {
                       << std::endl << std::endl << "More coming soon!" << std::endl;
         } else if (command == "exit" || command == "q") {
             break;
+        } else {
+            parser->parse(command);
         }
     }
 
@@ -32,7 +45,7 @@ int mainLoop() {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cout << "Usage: poc.exe <path_to_config_file>" << std::endl;
+        std::cout << "Usage: csql.exe <path_to_config_file>" << std::endl;
         return -1;
     }
 
@@ -41,24 +54,44 @@ int main(int argc, char **argv) {
     auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation);
 
     auto *log = new ChronoLog(config);
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    log->record(0, generator->generateRandomBytes(config->payloadSize));
-    std::cout << log->playback() << std::endl;
+    std::string cid = "test";
+    std::time(nullptr);
+
+    auto *writerFactory = new EventWriterFactory();
+    EventWriter *eventWriter = writerFactory->getWriter(config);
+    const char *st0 = "1656796500";
+    const char *st1 = "1656880867";
+    const char *st2 = "1656881867";
+    const char *st3 = "1656882867";
+    const char *st4 = "1656969299";
+    const char *st5 = "1657055699";
+
+    recordEvent(cid, st0, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st1, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st2, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st3, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st4, generator->generateRandomBytes(config->payloadSize), eventWriter);
+    recordEvent(cid, st5, generator->generateRandomBytes(config->payloadSize), eventWriter);
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
+    std::cout << log->playback(cid) << std::endl;
+
+    std::cout << "Closest: " << MemoryIndex::getClosestValue(1656881867) << std::endl;
 
 //    time_t timenum = (time_t) strtol(timestr, NULL, 10);
 
-    std::list<char *> events = log->replay(-1, -1);
-
-    int i = 0;
-    for (auto &event: events) {
-        std::cout << i++ << ": " << event << std::endl;
-    }
+//    std::list<std::pair<EID, const char *>> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
+//
+//    int i = 0;
+//    for (auto &event: *events) {
+//        std::cout << i++ << ": " << event.second << std::endl;
+//    }
 
     // Debug dump
-    MemoryEventStorage::dumpContents();
+//    MemoryEventStorage::dumpContents();
 
-    return mainLoop();
+    return mainLoop(config);
 }

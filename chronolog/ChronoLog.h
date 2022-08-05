@@ -2,18 +2,18 @@
 // Created by pablo on 30/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_CHRONOLOG_H
-#define CHRONOSQL_POC_CHRONOLOG_H
+#ifndef ChronoSQL_CHRONOLOG_H
+#define ChronoSQL_CHRONOLOG_H
 
 
 #include <string>
 #include "../config/ConfigurationManager.h"
-#include "../eventWriter/EventWriter.h"
-#include "../eventWriter/EventWriterFactory.h"
+#include "../event_writer/EventWriter.h"
+#include "../event_writer/EventWriterFactory.h"
 #include "../common/typedefs.h"
-#include "../eventReader/EventReader.h"
-#include "../eventReader/FSEventReader.h"
-#include "../eventReader/EventReaderFactory.h"
+#include "../event_reader/EventReader.h"
+#include "../event_reader/FSEventReader.h"
+#include "../event_reader/EventReaderFactory.h"
 
 class ChronoLog {
 
@@ -25,19 +25,19 @@ public:
         eventReader = readerFactory->getReader(config);
     }
 
-    EID record(CID cid, char *data) {
+    EID record(const CID &cid, const char *data) {
         EID id = std::time(nullptr);
         auto *event = new KeyValueEvent(id, data);
-        eventWriter->write(event);
+        eventWriter->write(cid, event);
         return id;
     }
 
-    char *playback() {
-        return eventReader->readLastEvent();
+    const char *playback(const CID &cid) {
+        return eventReader->readLastEvent(cid);
     }
 
-    std::list<char *> replay(EID startEID, EID endEID) {
-        return eventReader->readEventsInRange(startEID, endEID);
+    std::list<std::pair<EID, const char *>> *replay(const CID &cid, EID startEID, EID endEID) {
+        return eventReader->readEventsInRange(cid, startEID, endEID);
     }
 
 private:
@@ -47,4 +47,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_CHRONOLOG_H
+#endif //ChronoSQL_CHRONOLOG_H

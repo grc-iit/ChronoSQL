@@ -2,46 +2,57 @@
 // Created by pablo on 31/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
-#define CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
+#ifndef ChronoSQL_MEMORYEVENTSTORAGE_H
+#define ChronoSQL_MEMORYEVENTSTORAGE_H
 
 
 #include <list>
+#include <map>
 #include "../event/Event.h"
+#include "../exception/ChronicleNotFoundException.h"
 
 class MemoryEventStorage {
 
 public:
-    static std::list<Event *> *events;
+    static std::map<CID, std::list<Event *> *> events;
 
     static void initialize() {
-        events = new std::list<Event *>;
+//        events = new std::list<Event *>;
     }
 
-    static std::list<Event *> *getEvents() {
-        return events;
+    static std::list<Event *> *getEvents(const CID &cid) {
+        auto pos = events.find(cid);
+        if (pos == events.end()) {
+            // Not found
+            throw ChronicleNotFoundException();
+        } else {
+            return pos->second;
+        }
     }
 
-    static void setEvents(std::list<Event *> *events_) {
-        events = events_;
-    }
+    static void addEvent(const CID &cid, Event *event) {
+        auto pos = events.find(cid);
+        if (pos == events.end()) {
+            events.insert({cid, new std::list<Event *>});
+        }
 
-    static void addEvent(Event *event) {
-        events->push_back(event);
+        events.at(cid)->push_back(event);
     }
 
     static void dumpContents() {
         std::cout << std::endl << "***** Dumping contents of the in-memory event storage... *****" << std::endl;
-        for (auto event: *events) {
-            if (auto *kvEvent = dynamic_cast<KeyValueEvent *>(event)) {
-                std::cout << kvEvent->getTimestamp() << ", " << kvEvent->getPayload() << std::endl;
+        for (const auto &chronicle: events) {
+            std::cout << "Chronicle " << chronicle.first << std::endl;
+            for (auto event: *chronicle.second) {
+                if (auto *kvEvent = dynamic_cast<KeyValueEvent *>(event)) {
+                    std::cout << kvEvent->getTimestamp() << ", " << kvEvent->getPayload() << std::endl;
+                }
             }
         }
         std::cout << "***** Contents successfully dumped *****" << std::endl << std::endl;
     }
 };
 
-std::list<Event *> *MemoryEventStorage::events = new std::list<Event *>;
+std::map<CID, std::list<Event *> *> MemoryEventStorage::events;
 
-
-#endif //CHRONOSQL_POC_MEMORYEVENTSTORAGE_H
+#endif //ChronoSQL_MEMORYEVENTSTORAGE_H

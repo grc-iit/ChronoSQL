@@ -2,12 +2,12 @@
 // Created by pablo on 18/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENTGENERATORFACTORY_H
-#define CHRONOSQL_POC_EVENTGENERATORFACTORY_H
+#ifndef ChronoSQL_EVENTGENERATORFACTORY_H
+#define ChronoSQL_EVENTGENERATORFACTORY_H
 
 
 #include "EventGenerator.h"
-#include "../Config/ConfigurationManager.h"
+#include "../config/ConfigurationManager.h"
 #include "KeyValueEventGeneratorFactory.h"
 #include "KeyValueEventGenerator.h"
 
@@ -27,4 +27,4 @@ public:
 };
 
 
-#endif //CHRONOSQL_POC_EVENTGENERATORFACTORY_H
+#endif //ChronoSQL_EVENTGENERATORFACTORY_H

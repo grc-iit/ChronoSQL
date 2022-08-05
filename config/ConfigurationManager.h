@@ -2,8 +2,8 @@
 // Created by pablo on 21/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_CONFIGURATIONMANAGER_H
-#define CHRONOSQL_POC_CONFIGURATIONMANAGER_H
+#ifndef ChronoSQL_CONFIGURATIONMANAGER_H
+#define ChronoSQL_CONFIGURATIONMANAGER_H
 
 
 #include <string>
@@ -31,10 +31,15 @@ public:
         config(configDoc, OUTPUT_FILE, configuration->outputFile);
 
         if (configuration->eventType == EventType::FIXED_KEY_VALUE ||
-            configuration->eventType == EventType::MEMORY_KEY_VALUE) {
+            configuration->eventType == EventType::MEMORY_KEY_VALUE ||
+            configuration->eventType == EventType::INDEXED_KEY_VALUE) {
             config(configDoc, PAYLOAD_SIZE, configuration->payloadSize);
             config(configDoc, PAYLOAD_VARIATION, configuration->payloadVariation);
             config(configDoc, FIXED_PAYLOAD_SIZE, configuration->fixedPayloadSize);
+
+            if (configuration->eventType == EventType::INDEXED_KEY_VALUE) {
+                config(configDoc, INDEX_INTERVAL_BYTES, configuration->indexIntervalBytes);
+            }
         }
     }
 
@@ -84,4 +89,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_CONFIGURATIONMANAGER_H
+#endif //ChronoSQL_CONFIGURATIONMANAGER_H

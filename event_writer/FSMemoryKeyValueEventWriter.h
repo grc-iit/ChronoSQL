@@ -2,8 +2,8 @@
 // Created by pablo on 30/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_FSMEMORYKEYVALUEEVENTWRITER_H
-#define CHRONOSQL_POC_FSMEMORYKEYVALUEEVENTWRITER_H
+#ifndef ChronoSQL_FSMEMORYKEYVALUEEVENTWRITER_H
+#define ChronoSQL_FSMEMORYKEYVALUEEVENTWRITER_H
 
 
 #include <list>
@@ -18,16 +18,14 @@ using namespace Constants;
 class FSMemoryKeyValueEventWriter : public EventWriter {
 
 public:
-    explicit FSMemoryKeyValueEventWriter(std::string output_file) {
-        m_output_file = std::move(output_file);
-        eventFile = m_output_file + LOG_EXTENSION;
+    explicit FSMemoryKeyValueEventWriter() {
         MemoryEventStorage::initialize();
     }
 
-    int write(Event *event) override {
+    int write(const CID &cid, Event *event) override {
         auto *kvEvent = dynamic_cast<KeyValueEvent *>(event);
         if (kvEvent != nullptr) {
-            MemoryEventStorage::addEvent(kvEvent);
+            MemoryEventStorage::addEvent(cid, kvEvent);
             return 0;
         }
 
@@ -36,4 +34,4 @@ public:
 };
 
 
-#endif //CHRONOSQL_POC_FSMEMORYKEYVALUEEVENTWRITER_H
+#endif //ChronoSQL_FSMEMORYKEYVALUEEVENTWRITER_H

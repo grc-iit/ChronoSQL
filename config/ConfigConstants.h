@@ -2,8 +2,8 @@
 // Created by pablo on 21/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_CONFIGCONSTANTS_H
-#define CHRONOSQL_POC_CONFIGCONSTANTS_H
+#ifndef ChronoSQL_CONFIGCONSTANTS_H
+#define ChronoSQL_CONFIGCONSTANTS_H
 
 #include <string>
 
@@ -15,6 +15,7 @@ namespace ConfigConstants {
     const char *PAYLOAD_SIZE = "PAYLOAD_SIZE";
     const char *PAYLOAD_VARIATION = "PAYLOAD_VARIATION";
     const char *FIXED_PAYLOAD_SIZE = "FIXED_PAYLOAD_SIZE";
+    const char *INDEX_INTERVAL_BYTES = "INDEX_INTERVAL_BYTES";
 }
 
-#endif //CHRONOSQL_POC_CONFIGCONSTANTS_H
+#endif //ChronoSQL_CONFIGCONSTANTS_H

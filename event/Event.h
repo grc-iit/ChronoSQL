@@ -2,8 +2,8 @@
 // Created by pablo on 17/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_EVENT_H
-#define CHRONOSQL_POC_EVENT_H
+#ifndef ChronoSQL_EVENT_H
+#define ChronoSQL_EVENT_H
 
 
 #include <ctime>
@@ -26,4 +26,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_EVENT_H
+#endif //ChronoSQL_EVENT_H

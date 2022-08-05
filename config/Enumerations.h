@@ -2,8 +2,8 @@
 // Created by pablo on 21/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_ENUMERATIONS_H
-#define CHRONOSQL_POC_ENUMERATIONS_H
+#ifndef ChronoSQL_ENUMERATIONS_H
+#define ChronoSQL_ENUMERATIONS_H
 
 #include <unordered_map>
 
@@ -14,6 +14,10 @@ namespace Enumerations {
         FIXED_KEY_VALUE, MEMORY_KEY_VALUE, INDEXED_KEY_VALUE
     };
 
+    enum class DayOfTheWeek {
+        SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
+    };
+
     // Map to associate string values to the enum EventType
     static std::unordered_map<std::string, EventType> const EventTypeValues =
             {{"FIXED_KEY_VALUE",   EventType::FIXED_KEY_VALUE},
@@ -22,4 +26,4 @@ namespace Enumerations {
 }
 
 
-#endif //CHRONOSQL_POC_ENUMERATIONS_H
+#endif //ChronoSQL_ENUMERATIONS_H

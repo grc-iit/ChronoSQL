@@ -2,15 +2,15 @@
 // Created by pablo on 16/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_FSKEYVALUEEVENTWRITERFACTORY_H
-#define CHRONOSQL_POC_FSKEYVALUEEVENTWRITERFACTORY_H
+#ifndef ChronoSQL_FSKEYVALUEEVENTWRITERFACTORY_H
+#define ChronoSQL_FSKEYVALUEEVENTWRITERFACTORY_H
 
 
 #include "EventWriterFactory.h"
 
 #include <utility>
 #include "FSKeyValueEventWriter.h"
-#include "../Config/ConfigurationManager.h"
+#include "../config/ConfigurationManager.h"
 
 class FSKeyValueEventWriterFactory {
 public:
@@ -18,7 +18,7 @@ public:
             m_output_file(configurationManager->outputFile), payloadSize(configurationManager->payloadSize) {}
 
     [[nodiscard]] EventWriter *getWriter() const {
-        return new FSKeyValueEventWriter(this->m_output_file, payloadSize);
+        return new FSKeyValueEventWriter(payloadSize);
     }
 
 private:
@@ -27,4 +27,4 @@ private:
 };
 
 
-#endif //CHRONOSQL_POC_FSKEYVALUEEVENTWRITERFACTORY_H
+#endif //ChronoSQL_FSKEYVALUEEVENTWRITERFACTORY_H

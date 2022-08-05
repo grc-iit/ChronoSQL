@@ -1,25 +1,20 @@
 //
-// Created by pablo on 30/05/2022.
+// Created by pablo on 4/8/22.
 //
 
-#ifndef CHRONOSQL_POC_FSEVENTREADER_H
-#define CHRONOSQL_POC_FSEVENTREADER_H
+#ifndef CHRONOSQL_DISKEVENTREADER_H
+#define CHRONOSQL_DISKEVENTREADER_H
 
 
 #include "EventReader.h"
 
-#include <utility>
-#include <iostream>
-
-class FSEventReader : public EventReader {
+class DiskEventReader : public EventReader {
 
 public:
-    explicit FSEventReader(std::string logfile_, int fixedPayloadSize_) : fixedPayloadSize(fixedPayloadSize_) {
-        logfile = std::move(logfile_);
-    }
+    explicit DiskEventReader(int _fixedPayloadSize) : fixedPayloadSize(_fixedPayloadSize) {}
 
-    char *readLastEvent() override {
-        std::ifstream file = openReadFile(logfile);
+    const char *readLastEvent(const CID &cid) override {
+        std::ifstream file = openReadFile(cid + LOG_EXTENSION);
         int fileSize = (int) file.tellg();
 
         if (fileSize > fixedPayloadSize) {
@@ -32,45 +27,46 @@ public:
         return nullptr;
     }
 
-    std::list<char *> readEventsInRange(std::time_t start, std::time_t end) override {
+    std::list<std::pair<EID, const char *>> *
+    readEventsInRange(const std::string &filename, long pos, std::time_t start, std::time_t end) {
         // Very naive implementation: start reading from beginning until EID >= start is found
         // Read from that point until EID > end is found
         // Alternative: perform binary search to find an event in the range, and start from there
+        std::ifstream file = openReadFile(filename);
 
-        std::ifstream file = openReadFile(logfile);
-        std::streampos fileSize = file.tellg();
-        std::list<char *> events;
-
-        int i = 0;
         // Size = payload + 10 (EID) + comma + semicolon
         int readSize = fixedPayloadSize + 10 + 1 + 1;
-        while (i + readSize <= fileSize) {
+        std::streampos fileSize = file.tellg();
+
+        auto *events = new std::list<std::pair<EID, const char *>>;
+
+        while (pos + readSize <= fileSize) {
             char *id = new char[10];
             char *data = new char[fixedPayloadSize + 1];
 
-            file.seekg(i);
+            file.seekg(pos);
             file.get(id, 11);
             auto eid = (std::time_t) strtol(id, nullptr, 10);
 
             if ((start == VOID_TIMESTAMP || eid >= start) && (end == VOID_TIMESTAMP || eid <= end)) {
-                file.seekg(i + 10 + 1);
+                file.seekg(pos + 10 + 1);
                 file.get(data, fixedPayloadSize + 1);
-                events.push_back(data);
+                events->push_back(std::pair(eid, data));
             }
 
             if (end != VOID_TIMESTAMP && eid > end) {
                 break;
             }
 
-            i += readSize;
+            pos += readSize;
         }
 
         return events;
     }
 
-private:
+protected:
     int fixedPayloadSize;
 };
 
 
-#endif //CHRONOSQL_POC_FSEVENTREADER_H
+#endif //CHRONOSQL_DISKEVENTREADER_H

@@ -2,26 +2,27 @@
 // Created by pablo on 17/05/2022.
 //
 
-#ifndef CHRONOSQL_POC_KEYVALUEEVENT_H
-#define CHRONOSQL_POC_KEYVALUEEVENT_H
+#ifndef ChronoSQL_KEYVALUEEVENT_H
+#define ChronoSQL_KEYVALUEEVENT_H
 
 
 #include "Event.h"
+#include "../common/typedefs.h"
 
 class KeyValueEvent : public Event {
 
 public:
-    explicit KeyValueEvent(char *payload_) : Event(), payload(payload_) {}
+    explicit KeyValueEvent(const char *payload_) : Event(), payload(payload_) {}
 
-    KeyValueEvent(std::time_t timestamp_, char *payload_) : Event(timestamp_), payload(payload_) {}
+    KeyValueEvent(EID timestamp_, const char *payload_) : Event(timestamp_), payload(payload_) {}
 
-    char *getPayload() {
+    const char *getPayload() {
         return payload;
     }
 
 private:
-    char *payload;
+    const char *payload;
 };
 
 
-#endif //CHRONOSQL_POC_KEYVALUEEVENT_H
+#endif //ChronoSQL_KEYVALUEEVENT_H
