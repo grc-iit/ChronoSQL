@@ -51,47 +51,23 @@ int main(int argc, char **argv) {
 
     auto *config = (new ConfigurationManager(argv[1]))->getConfiguration();
 
-    auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation);
+    if (argc > 2) {
+        // Event generation
+        auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation, 1628202739,
+                                                     1659738749);
+        auto *writerFactory = new EventWriterFactory();
+        EventWriter *eventWriter = writerFactory->getWriter(config);
 
-    auto *log = new ChronoLog(config);
-    std::string cid = "test";
-    std::time(nullptr);
+        std::list<Event *> events = generator->generateEvents(atoi(argv[3]));
 
-    auto *writerFactory = new EventWriterFactory();
-    EventWriter *eventWriter = writerFactory->getWriter(config);
-    const char *st0 = "1656796500";
-    const char *st1 = "1656880867";
-    const char *st2 = "1656881867";
-    const char *st3 = "1656882867";
-    const char *st4 = "1656969299";
-    const char *st5 = "1657055699";
+        events.sort([](const Event *event1, const Event *event2) {
+            return event1->getTimestamp() < event2->getTimestamp();
+        });
 
-    recordEvent(cid, st0, generator->generateRandomBytes(config->payloadSize), eventWriter);
-    recordEvent(cid, st1, generator->generateRandomBytes(config->payloadSize), eventWriter);
-    recordEvent(cid, st2, generator->generateRandomBytes(config->payloadSize), eventWriter);
-    recordEvent(cid, st3, generator->generateRandomBytes(config->payloadSize), eventWriter);
-    recordEvent(cid, st4, generator->generateRandomBytes(config->payloadSize), eventWriter);
-    recordEvent(cid, st5, generator->generateRandomBytes(config->payloadSize), eventWriter);
-//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-//    log->record(cid, generator->generateRandomBytes(config->payloadSize));
-    std::cout << log->playback(cid) << std::endl;
+        eventWriter->write(argv[2], events);
 
-    std::cout << "Closest: " << MemoryIndex::getClosestValue(1656881867) << std::endl;
-
-//    time_t timenum = (time_t) strtol(timestr, NULL, 10);
-
-//    std::list<std::pair<EID, const char *>> *events = log->replay(cid, VOID_TIMESTAMP, VOID_TIMESTAMP);
-//
-//    int i = 0;
-//    for (auto &event: *events) {
-//        std::cout << i++ << ": " << event.second << std::endl;
-//    }
-
-    // Debug dump
-//    MemoryEventStorage::dumpContents();
+        return 0;
+    }
 
     return mainLoop(config);
 }

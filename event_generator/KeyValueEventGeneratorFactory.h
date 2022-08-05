@@ -16,12 +16,14 @@ public:
             payloadSize(config->payloadSize), payloadVariation(config->payloadVariation) {}
 
     [[nodiscard]] EventGenerator *getGenerator() const {
-        return new KeyValueEventGenerator(payloadSize, payloadVariation);
+        return new KeyValueEventGenerator(payloadSize, payloadVariation, lowerTimestamp, higherTimestamp);
     }
 
 private:
     int payloadSize;
     int payloadVariation;
+    long lowerTimestamp;
+    long higherTimestamp;
 };
 
 
