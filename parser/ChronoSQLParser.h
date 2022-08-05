@@ -280,6 +280,10 @@ private:
 
     static bool
     eventMeetsDaysOfTheWeek(std::pair<EID, const char *> ev, const std::list<Enumerations::DayOfTheWeek> &dows) {
+        if (dows.empty()) {
+            return true;
+        }
+
         for (Enumerations::DayOfTheWeek dow: dows) {
             if (extractDayOfTheWeek(ev.first) == dow) {
                 return true;
@@ -401,9 +405,13 @@ std::unordered_map<hsql::DatetimeField, long> ChronoSQLParser::intervalConversio
                                                                                       {hsql::kDatetimeMonth,  2626288},
                                                                                       {hsql::kDatetimeYear,   31536000}};
 std::unordered_map<std::string, Enumerations::DayOfTheWeek> ChronoSQLParser::daysOfTheWeek = {
-        {"SUNDAY", DayOfTheWeek::SUNDAY}, {"MONDAY", DayOfTheWeek::MONDAY}, {"TUESDAY", DayOfTheWeek::TUESDAY},
-        {"WEDNESDAY", DayOfTheWeek::WEDNESDAY}, {"THURSDAY", DayOfTheWeek::THURSDAY}, {"FRIDAY", DayOfTheWeek::FRIDAY},
-        {"SATURDAY", DayOfTheWeek::SATURDAY}};
+        {"SUNDAY",    DayOfTheWeek::SUNDAY},
+        {"MONDAY",    DayOfTheWeek::MONDAY},
+        {"TUESDAY",   DayOfTheWeek::TUESDAY},
+        {"WEDNESDAY", DayOfTheWeek::WEDNESDAY},
+        {"THURSDAY",  DayOfTheWeek::THURSDAY},
+        {"FRIDAY",    DayOfTheWeek::FRIDAY},
+        {"SATURDAY",  DayOfTheWeek::SATURDAY}};
 
 
 #endif //CHRONOSQL_SQLPARSER_H
