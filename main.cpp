@@ -18,7 +18,7 @@ int mainLoop(ConfigurationValues *config) {
     auto *parser = new ChronoSQLParser(config);
     std::string command;
 
-    std::cout << "ChronoSQL version 0.0.1" << std::endl << "Type \"help\" for help." << std::endl;
+    std::cout << "ChronoSQL version 1.0.0" << std::endl << "Type \"help\" for help." << std::endl;
 
     while (true) {
         if (isatty(STDIN_FILENO)) {

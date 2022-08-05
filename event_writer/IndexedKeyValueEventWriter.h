@@ -73,7 +73,6 @@ private:
     void updateIndex(const CID &cid, KeyValueEvent *kvEvent) {
         // Size equals size of EID, size of payload + one comma + one semicolon
         int eventSize = fixedPayloadSize + getNumberOfDigits(kvEvent->getTimestamp()) + 2;
-        std::cout << eventSize << std::endl;
         if (currentByteCount + eventSize >= indexIntervalBytes) {
             MemoryIndex::addEntry(kvEvent->getTimestamp(), totalByteCount);
             std::ofstream outputIndexFile = openWriteFile(cid + INDEX_EXTENSION);
