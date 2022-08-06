@@ -73,12 +73,11 @@ int main(int argc, char **argv) {
             // Generate events
             generateEvents(config, argv);
         } else if (!strcmp(argv[2], "-i")) {
-            std::string buf(argv[3]);
-            MemoryIndex::generate(buf.append(INDEX_EXTENSION).c_str());
-
-//            for (const auto &entry: std::filesystem::directory_iterator("."))
-//                std::cout << entry.path() << std::endl;
-
+            // Bring indexes to memory
+            for (int i = 3; i < argc; i++) {
+                std::string buf(argv[i]);
+                MemoryIndex::generate(buf);
+            }
             return mainLoop(config);
         } else {
             std::cout << "Invalid arguments" << std::endl;

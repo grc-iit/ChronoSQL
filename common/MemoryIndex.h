@@ -11,20 +11,20 @@
 class MemoryIndex {
 
 public:
-    static std::map<EID, long> index;
+    static std::map<CID, std::map<EID, long>> index;
 
-    static void addEntry(EID eid, long longValue) {
-        index[eid] = longValue;
+    static void addEntry(const CID &cid, EID eid, long longValue) {
+        index[cid][eid] = longValue;
     }
 
-    static long getClosestValue(EID eid) {
-        return index.lower_bound(eid)->second;
+    static long getClosestValue(const CID &cid, EID eid) {
+        return index[cid].lower_bound(eid)->second;
     }
 
-    static void generate(const char *indexFilename) {
+    static void generate(std::string cid) {
         int pos = 0;
 
-        std::ifstream file(indexFilename, std::ifstream::binary | std::ios::ate);
+        std::ifstream file(cid.append(INDEX_EXTENSION).c_str(), std::ifstream::binary | std::ios::ate);
         std::streampos fileSize = file.tellg();
 
         while (pos <= fileSize) {
@@ -40,12 +40,14 @@ public:
             std::getline(file, offsetChar, ';');
             pos += offsetChar.length() + 1;
             if (offsetChar.length() > 0 && pos <= fileSize) {
-                addEntry(eid, std::stoi(offsetChar));
+                addEntry(cid, eid, std::stoi(offsetChar));
             }
         }
+
+        std::cout << "Loaded index " << cid << ", index size: " << index[cid].size() << std::endl;
     }
 };
 
-std::map<EID, long> MemoryIndex::index;
+std::map<CID, std::map<EID, long>> MemoryIndex::index;
 
 #endif //CHRONOSQL_MEMORYINDEX_H
