@@ -29,6 +29,8 @@ public:
         config(configDoc, NUMBER_EVENTS, configuration->nEvents);
         config(configDoc, EVENT_TYPE, configuration->eventType);
         config(configDoc, OUTPUT_FILE, configuration->outputFile);
+        config(configDoc, LOWER_TIMESTAMP, configuration->lowerTimestamp);
+        config(configDoc, HIGHER_TIMESTAMP, configuration->higherTimestamp);
 
         if (configuration->eventType == EventType::FIXED_KEY_VALUE ||
             configuration->eventType == EventType::MEMORY_KEY_VALUE ||
@@ -73,6 +75,12 @@ private:
         assert(doc.HasMember(member));
         assert(doc[member].IsInt());
         variable = doc[member].GetInt();
+    }
+
+    void config(rapidjson::Document &doc, const char *member, long &variable) {
+        assert(doc.HasMember(member));
+        assert(doc[member].IsInt64());
+        variable = doc[member].GetInt64();
     }
 
     void config(rapidjson::Document &doc, const char *member, std::string &variable) {

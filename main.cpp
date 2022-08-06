@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <filesystem>
 #include "config/ConfigurationManager.h"
 #include "event_generator/EventGeneratorFactory.h"
 #include "chronolog/ChronoLog.h"
@@ -12,6 +13,22 @@ void recordEvent(const CID &cid, const char *eid, const char *payload, EventWrit
 
 void recordEvent(const CID &cid, const char *payload, EventWriter *eventWriter) {
     eventWriter->write(cid, new KeyValueEvent(std::time(nullptr), payload));
+}
+
+void generateEvents(ConfigurationValues *config, char **argv) {
+    // Event generation
+    auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation,
+                                                 config->lowerTimestamp, config->higherTimestamp);
+    auto *writerFactory = new EventWriterFactory();
+    EventWriter *eventWriter = writerFactory->getWriter(config);
+
+    std::list<Event *> events = generator->generateEvents(strtol(argv[4], nullptr, 10));
+
+    events.sort([](const Event *event1, const Event *event2) {
+        return event1->getTimestamp() < event2->getTimestamp();
+    });
+
+    eventWriter->write(argv[3], events);
 }
 
 int mainLoop(ConfigurationValues *config) {
@@ -52,19 +69,21 @@ int main(int argc, char **argv) {
     auto *config = (new ConfigurationManager(argv[1]))->getConfiguration();
 
     if (argc > 2) {
-        // Event generation
-        auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation, 1628202739,
-                                                     1659738749);
-        auto *writerFactory = new EventWriterFactory();
-        EventWriter *eventWriter = writerFactory->getWriter(config);
+        if (!strcmp(argv[2], "-g")) {
+            // Generate events
+            generateEvents(config, argv);
+        } else if (!strcmp(argv[2], "-i")) {
+            std::string buf(argv[3]);
+            MemoryIndex::generate(buf.append(INDEX_EXTENSION).c_str());
 
-        std::list<Event *> events = generator->generateEvents(atoi(argv[3]));
+//            for (const auto &entry: std::filesystem::directory_iterator("."))
+//                std::cout << entry.path() << std::endl;
 
-        events.sort([](const Event *event1, const Event *event2) {
-            return event1->getTimestamp() < event2->getTimestamp();
-        });
-
-        eventWriter->write(argv[2], events);
+            return mainLoop(config);
+        } else {
+            std::cout << "Invalid arguments" << std::endl;
+            return -1;
+        }
 
         return 0;
     }
