@@ -15,20 +15,24 @@ void recordEvent(const CID &cid, const char *payload, EventWriter *eventWriter) 
     eventWriter->write(cid, new KeyValueEvent(std::time(nullptr), payload));
 }
 
-void generateEvents(ConfigurationValues *config, char **argv) {
+void generateEvents(ConfigurationValues *config, int argc, char **argv) {
     // Event generation
     auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation,
                                                  config->lowerTimestamp, config->higherTimestamp);
     auto *writerFactory = new EventWriterFactory();
     EventWriter *eventWriter = writerFactory->getWriter(config);
 
-    std::list<Event *> events = generator->generateEvents(strtol(argv[4], nullptr, 10));
+    for (int i = 3; i < (argc - 1); i += 2) {
+        std::list<Event *> events = generator->generateEvents(strtol(argv[i + 1], nullptr, 10));
 
-    events.sort([](const Event *event1, const Event *event2) {
-        return event1->getTimestamp() < event2->getTimestamp();
-    });
+        events.sort([](const Event *event1, const Event *event2) {
+            return event1->getTimestamp() < event2->getTimestamp();
+        });
 
-    eventWriter->write(argv[3], events);
+        eventWriter->write(argv[i], events);
+    }
+
+    MemoryEventStorage::dumpContents();
 }
 
 int mainLoop(ConfigurationValues *config) {
@@ -71,7 +75,8 @@ int main(int argc, char **argv) {
     if (argc > 2) {
         if (!strcmp(argv[2], "-g")) {
             // Generate events
-            generateEvents(config, argv);
+            generateEvents(config, argc, argv);
+            return mainLoop(config);
         } else if (!strcmp(argv[2], "-i")) {
             // Bring indexes to memory
             for (int i = 3; i < argc; i++) {
@@ -83,8 +88,6 @@ int main(int argc, char **argv) {
             std::cout << "Invalid arguments" << std::endl;
             return -1;
         }
-
-        return 0;
     }
 
     return mainLoop(config);
