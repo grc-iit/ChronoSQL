@@ -28,6 +28,11 @@ public:
 
     // Indexing configuration
     int indexIntervalBytes = 4096;
+
+    // Testing configuration
+    bool hideOutput;
+    int nExecutions = 3;
+    std::string sqlFilePath;
 };
 
 

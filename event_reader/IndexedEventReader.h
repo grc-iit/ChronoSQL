@@ -19,8 +19,6 @@ public:
         // We will start reading either from the beginning or from the closest index entry
         long i = start == VOID_TIMESTAMP ? 0 : MemoryIndex::getClosestValue(cid, start);
 
-        std::cout << i << std::endl;
-
         return DiskEventReader::readEventsInRange(cid + LOG_EXTENSION, i, start, end);
     }
 };

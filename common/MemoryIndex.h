@@ -23,8 +23,9 @@ public:
 
     static void generate(std::string cid) {
         int pos = 0;
+        auto cidFile = cid;
 
-        std::ifstream file(cid.append(INDEX_EXTENSION).c_str(), std::ifstream::binary | std::ios::ate);
+        std::ifstream file(cidFile.append(INDEX_EXTENSION).c_str(), std::ifstream::binary | std::ios::ate);
         std::streampos fileSize = file.tellg();
 
         while (pos <= fileSize) {

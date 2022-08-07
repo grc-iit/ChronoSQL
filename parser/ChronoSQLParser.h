@@ -24,6 +24,7 @@ public:
 
     ChronoSQLParser(ConfigurationValues *config) {
         chronoLog = new ChronoLog(config);
+        hideOutput = config->hideOutput;
     }
 
     void parse(const std::string &query) {
@@ -45,6 +46,7 @@ public:
     }
 
 private:
+    bool hideOutput;
     ChronoLog *chronoLog;
     static std::unordered_map<hsql::DatetimeField, long> intervalConversions;
     static std::unordered_map<std::string, Enumerations::DayOfTheWeek> daysOfTheWeek;
@@ -53,30 +55,34 @@ private:
 
     void printResults(std::list<std::pair<EID, const char *>> *events,
                       std::unordered_map<std::string, std::string> aliases, std::list<GroupByExpression *> *groupBy) {
-        int i = 0, isAggregate = 0, isWindow = 0;
-        std::cout << std::endl;
+        if (!hideOutput) {
+            int i = 0, isAggregate = 0, isWindow = 0;
+            std::cout << std::endl;
 
-        if (events->size() > 0 &&
-            (SUPPORTED_FUNCTIONS.count(events->front().second) ||
-             SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
-            isAggregate = 1;
-            isWindow = (strcmp(events->front().second, "WINDOW") == 0) || aliases[events->front().second] == "WINDOW";
+            if (events->size() > 0 &&
+                (SUPPORTED_FUNCTIONS.count(events->front().second) ||
+                 SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
+                isAggregate = 1;
+                isWindow =
+                        (strcmp(events->front().second, "WINDOW") == 0) || aliases[events->front().second] == "WINDOW";
 
-            std::cout << events->front().second << std::endl;
+                std::cout << events->front().second << std::endl;
 
-            events->pop_front();
+                events->pop_front();
+            }
+
+            std::cout << "----------" << std::endl;
+            for (auto &event: *events) {
+                std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
+                std::cout << windowValue << event.second << std::endl;
+                i++;
+            }
+
+            if (!isAggregate) {
+                std::cout << "(" << i << " events)" << std::endl;
+            }
         }
-
-        std::cout << "----------" << std::endl;
-        for (auto &event: *events) {
-            std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
-            std::cout << windowValue << event.second << std::endl;
-            i++;
-        }
-
-        if (!isAggregate) {
-            std::cout << "(" << i << " events)" << std::endl;
-        }
+        free(events);
     }
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
@@ -276,6 +282,8 @@ private:
                 value.push_back({intervalStart, longToChar(currentAgg)});
             }
         }
+
+        free(events);
     }
 
     static bool

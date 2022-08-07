@@ -15,7 +15,16 @@ void recordEvent(const CID &cid, const char *payload, EventWriter *eventWriter) 
     eventWriter->write(cid, new KeyValueEvent(std::time(nullptr), payload));
 }
 
-void generateEvents(ConfigurationValues *config, int argc, char **argv) {
+std::string replaceAll(std::string str, const std::string &from, const std::string &to) {
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+    }
+    return str;
+}
+
+int generateEvents(ConfigurationValues *config, int argc, char **argv) {
     // Event generation
     auto *generator = new KeyValueEventGenerator(config->payloadSize, config->payloadVariation,
                                                  config->lowerTimestamp, config->higherTimestamp);
@@ -23,6 +32,10 @@ void generateEvents(ConfigurationValues *config, int argc, char **argv) {
     EventWriter *eventWriter = writerFactory->getWriter(config);
 
     for (int i = 3; i < (argc - 1); i += 2) {
+        if (!strcmp(argv[i], "-t")) {
+            return 1;
+        }
+
         std::list<Event *> events = generator->generateEvents(strtol(argv[i + 1], nullptr, 10));
 
         events.sort([](const Event *event1, const Event *event2) {
@@ -32,7 +45,7 @@ void generateEvents(ConfigurationValues *config, int argc, char **argv) {
         eventWriter->write(argv[i], events);
     }
 
-    MemoryEventStorage::dumpContents();
+    return 0;
 }
 
 int mainLoop(ConfigurationValues *config) {
@@ -64,6 +77,49 @@ int mainLoop(ConfigurationValues *config) {
     return 0;
 }
 
+int executeTests(ConfigurationValues *config) {
+    std::string cidPrefix;
+    if (config->eventType == EventType::MEMORY_KEY_VALUE) {
+        cidPrefix = "mem";
+    } else if (config->eventType == EventType::FIXED_KEY_VALUE) {
+        cidPrefix = "naive";
+    } else if (config->eventType == EventType::INDEXED_KEY_VALUE) {
+        cidPrefix = "indexed";
+    }
+
+    auto *parser = new ChronoSQLParser(config);
+    std::ifstream sqlFile(config->sqlFilePath);
+    std::string statement;
+    std::unordered_map<int, std::string> suffixes = {{10000,    "_10k"},
+                                                     {100000,   "_100k"},
+                                                     {1000000,  "_1m"},
+                                                     {10000000, "_10m"}};
+    std::unordered_map<int, std::list<double>> results;
+
+    auto statements = std::list<std::string>();
+
+    while (std::getline(sqlFile, statement)) {
+        statements.push_back(statement);
+    }
+
+    for (int i = 10000; i <= 10000000; i *= 10) {
+        results[i] = std::list<double>();
+        for (std::string st: statements) {
+            st = replaceAll(st, "<log>", cidPrefix + suffixes[i]);
+            std::cout << st << std::endl;
+
+            auto start = std::chrono::steady_clock::now();
+            parser->parse(st);
+            auto end = std::chrono::steady_clock::now();
+            double diff = std::chrono::duration<double, std::milli>(end - start).count();
+            std::cout << diff << std::endl;
+            results[i].push_back(diff);
+        }
+    }
+
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         std::cout << "Usage: csql.exe <path_to_config_file>" << std::endl;
@@ -71,23 +127,30 @@ int main(int argc, char **argv) {
     }
 
     auto *config = (new ConfigurationManager(argv[1]))->getConfiguration();
+    int testing = 0;
 
     if (argc > 2) {
         if (!strcmp(argv[2], "-g")) {
             // Generate events
-            generateEvents(config, argc, argv);
-            return mainLoop(config);
+            testing = generateEvents(config, argc, argv);
         } else if (!strcmp(argv[2], "-i")) {
             // Bring indexes to memory
             for (int i = 3; i < argc; i++) {
+                if (!strcmp(argv[i], "-t")) {
+                    testing = 1;
+                    break;
+                }
                 std::string buf(argv[i]);
                 MemoryIndex::generate(buf);
             }
-            return mainLoop(config);
+        } else if (!strcmp(argv[2], "-t")) {
+            return executeTests(config);
         } else {
             std::cout << "Invalid arguments" << std::endl;
             return -1;
         }
+
+        return testing ? executeTests(config) : mainLoop(config);
     }
 
     return mainLoop(config);
