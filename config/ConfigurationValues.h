@@ -23,9 +23,16 @@ public:
     int payloadSize = 0;
     int payloadVariation = 0;
     int fixedPayloadSize = 0;
+    long lowerTimestamp = 1628202739;
+    long higherTimestamp = 1659738749;
 
     // Indexing configuration
     int indexIntervalBytes = 4096;
+
+    // Testing configuration
+    bool hideOutput;
+    int nExecutions = 3;
+    std::string sqlFilePath;
 };
 
 

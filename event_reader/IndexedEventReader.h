@@ -17,7 +17,7 @@ public:
     readEventsInRange(const CID &cid, std::time_t start, std::time_t end) override {
 
         // We will start reading either from the beginning or from the closest index entry
-        long i = start == VOID_TIMESTAMP ? 0 : MemoryIndex::getClosestValue(start);
+        long i = start == VOID_TIMESTAMP ? 0 : MemoryIndex::getClosestValue(cid, start);
 
         return DiskEventReader::readEventsInRange(cid + LOG_EXTENSION, i, start, end);
     }

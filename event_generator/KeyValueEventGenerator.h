@@ -12,15 +12,17 @@
 class KeyValueEventGenerator : public EventGenerator {
 
 public:
-    explicit KeyValueEventGenerator(int payloadSize_, int payloadVariation_) :
-            payloadSize(payloadSize_), payloadVariation(payloadVariation_) {}
+    explicit KeyValueEventGenerator(int _payloadSize, int _payloadVariation, EID _lowerTimestamp, EID _higherTimestamp)
+            : payloadSize(_payloadSize), payloadVariation(_payloadVariation), lowerTimestamp(_lowerTimestamp),
+              higherTimestamp(_higherTimestamp) {
+    }
 
     [[nodiscard]] Event *generateEvent() const override {
         return generateEvent(payloadSize);
     }
 
     [[nodiscard]] Event *generateEvent(int size) const override {
-        return new KeyValueEvent(std::time(nullptr), generateRandomBytes(size));
+        return new KeyValueEvent(generateRandomEID(), generateRandomBytes(size));
     }
 
     [[nodiscard]] std::list<Event *> generateEvents(int nEvents) const override {
@@ -28,18 +30,25 @@ public:
 
         // A random value between payloadSize +/- payloadVariation will be generated for each event
         std::mt19937 rg{std::random_device{}()};
-        std::uniform_int_distribution<std::string::size_type> pick(payloadSize - payloadVariation,
-                                                                   payloadSize + payloadVariation);
+        std::uniform_int_distribution<long> pick(lowerTimestamp, higherTimestamp);
 
         for (int i = 0; i < nEvents; i++) {
-            events.push_back(generateEvent(pick(rg)));
+            events.push_back(new KeyValueEvent(pick(rg), generateRandomBytes(payloadSize)));
         }
         return events;
+    }
+
+    [[nodiscard]] EID generateRandomEID() const {
+        std::mt19937 rg{std::random_device{}()};
+        std::uniform_int_distribution<long> pick(lowerTimestamp, higherTimestamp);
+        return pick(rg);
     }
 
 private:
     int payloadSize;
     int payloadVariation;
+    EID lowerTimestamp;
+    EID higherTimestamp;
 };
 
 

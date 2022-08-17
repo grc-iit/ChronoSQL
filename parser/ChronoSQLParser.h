@@ -24,6 +24,7 @@ public:
 
     ChronoSQLParser(ConfigurationValues *config) {
         chronoLog = new ChronoLog(config);
+        hideOutput = config->hideOutput;
     }
 
     void parse(const std::string &query) {
@@ -45,6 +46,7 @@ public:
     }
 
 private:
+    bool hideOutput;
     ChronoLog *chronoLog;
     static std::unordered_map<hsql::DatetimeField, long> intervalConversions;
     static std::unordered_map<std::string, Enumerations::DayOfTheWeek> daysOfTheWeek;
@@ -53,29 +55,33 @@ private:
 
     void printResults(std::list<std::pair<EID, const char *>> *events,
                       std::unordered_map<std::string, std::string> aliases, std::list<GroupByExpression *> *groupBy) {
-        int i = 0, isAggregate = 0, isWindow = 0;
-        std::cout << std::endl;
+        if (!hideOutput) {
+            int i = 0, isAggregate = 0, isWindow = 0;
+            std::cout << std::endl;
 
-        if (events->size() > 0 &&
-            (SUPPORTED_FUNCTIONS.count(events->front().second) ||
-             SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
-            isAggregate = 1;
-            isWindow = (strcmp(events->front().second, "WINDOW") == 0) || aliases[events->front().second] == "WINDOW";
+            if (events->size() > 0 &&
+                (SUPPORTED_FUNCTIONS.count(events->front().second) ||
+                 SUPPORTED_FUNCTIONS.count(aliases[events->front().second]))) {
+                isAggregate = 1;
+                isWindow =
+                        (strcmp(events->front().second, "WINDOW") == 0) || aliases[events->front().second] == "WINDOW";
 
-            std::cout << events->front().second << std::endl;
+                std::cout << events->front().second << std::endl;
 
-            events->pop_front();
-        }
+                events->pop_front();
+            }
 
-        std::cout << "----------" << std::endl;
-        for (auto &event: *events) {
-            std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
-            std::cout << windowValue << event.second << std::endl;
-            i++;
-        }
+            std::cout << "----------" << std::endl;
+            i = 0;
+            for (auto &event: *events) {
+                std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
+                std::cout << windowValue << event.second << std::endl;
+                i++;
+            }
 
-        if (!isAggregate) {
-            std::cout << "(" << i << " events)" << std::endl;
+            if (!isAggregate) {
+                std::cout << "(" << i << " events)" << std::endl;
+            }
         }
     }
 
@@ -126,6 +132,10 @@ private:
 
         printResults(results, aliases, groupByExpressions);
 
+        free(results);
+        free(conditions);
+        free(expressions);
+        free(groupByExpressions);
         return 0;
     }
 
@@ -147,6 +157,7 @@ private:
                             value->push_back(ev);
                         }
                     }
+                    free(events);
                     return value;
                 }
             } else if (e->isFunction) {
@@ -163,6 +174,7 @@ private:
                     if (e->name == "COUNT") {
                         auto results = executeExpressions(cid, e->nestedExpressions, conditions, groupBy, aliases);
                         value->push_back(std::pair(0, std::to_string(results->size()).c_str()));
+                        free(results);
                     } else if (e->name == "WINDOW") {
                         if (e->nestedExpressions == nullptr || e->nestedExpressions->empty() ||
                             e->nestedExpressions->front()->type != hsql::kExprLiteralInterval) {
@@ -275,11 +287,18 @@ private:
             if (aggregate != nullptr) {
                 value.push_back({intervalStart, longToChar(currentAgg)});
             }
+
         }
+
+        free(events);
     }
 
     static bool
     eventMeetsDaysOfTheWeek(std::pair<EID, const char *> ev, const std::list<Enumerations::DayOfTheWeek> &dows) {
+        if (dows.empty()) {
+            return true;
+        }
+
         for (Enumerations::DayOfTheWeek dow: dows) {
             if (extractDayOfTheWeek(ev.first) == dow) {
                 return true;
@@ -401,9 +420,13 @@ std::unordered_map<hsql::DatetimeField, long> ChronoSQLParser::intervalConversio
                                                                                       {hsql::kDatetimeMonth,  2626288},
                                                                                       {hsql::kDatetimeYear,   31536000}};
 std::unordered_map<std::string, Enumerations::DayOfTheWeek> ChronoSQLParser::daysOfTheWeek = {
-        {"SUNDAY", DayOfTheWeek::SUNDAY}, {"MONDAY", DayOfTheWeek::MONDAY}, {"TUESDAY", DayOfTheWeek::TUESDAY},
-        {"WEDNESDAY", DayOfTheWeek::WEDNESDAY}, {"THURSDAY", DayOfTheWeek::THURSDAY}, {"FRIDAY", DayOfTheWeek::FRIDAY},
-        {"SATURDAY", DayOfTheWeek::SATURDAY}};
+        {"SUNDAY",    DayOfTheWeek::SUNDAY},
+        {"MONDAY",    DayOfTheWeek::MONDAY},
+        {"TUESDAY",   DayOfTheWeek::TUESDAY},
+        {"WEDNESDAY", DayOfTheWeek::WEDNESDAY},
+        {"THURSDAY",  DayOfTheWeek::THURSDAY},
+        {"FRIDAY",    DayOfTheWeek::FRIDAY},
+        {"SATURDAY",  DayOfTheWeek::SATURDAY}};
 
 
 #endif //CHRONOSQL_SQLPARSER_H

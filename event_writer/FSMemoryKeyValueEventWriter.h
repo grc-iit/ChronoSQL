@@ -31,6 +31,17 @@ public:
 
         return -1;
     }
+
+    int write(const CID &cid, std::list<Event *> events) override {
+        for (auto const i: events) {
+            auto *kvEvent = dynamic_cast<KeyValueEvent *>(i);
+            if (kvEvent != nullptr) {
+                MemoryEventStorage::addEvent(cid, kvEvent);
+            }
+        }
+
+        return 0;
+    };
 };
 
 

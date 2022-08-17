@@ -59,6 +59,7 @@ public:
             }
 
             pos += readSize;
+            free(id);
         }
 
         return events;

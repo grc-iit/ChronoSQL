@@ -74,7 +74,7 @@ private:
         // Size equals size of EID, size of payload + one comma + one semicolon
         int eventSize = fixedPayloadSize + getNumberOfDigits(kvEvent->getTimestamp()) + 2;
         if (currentByteCount + eventSize >= indexIntervalBytes) {
-            MemoryIndex::addEntry(kvEvent->getTimestamp(), totalByteCount);
+            MemoryIndex::addEntry(cid, kvEvent->getTimestamp(), totalByteCount);
             std::ofstream outputIndexFile = openWriteFile(cid + INDEX_EXTENSION);
             writeToOutputFile(outputIndexFile, kvEvent->getTimestamp(), totalByteCount);
             outputIndexFile.close();
