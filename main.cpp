@@ -32,10 +32,6 @@ int generateEvents(ConfigurationValues *config, int argc, char **argv) {
     EventWriter *eventWriter = writerFactory->getWriter(config);
 
     for (int i = 3; i < (argc - 1); i += 2) {
-        if (!strcmp(argv[i], "-t")) {
-            return 1;
-        }
-
         std::list<Event *> events = generator->generateEvents(strtol(argv[i + 1], nullptr, 10));
 
         events.sort([](const Event *event1, const Event *event2) {
@@ -43,6 +39,12 @@ int generateEvents(ConfigurationValues *config, int argc, char **argv) {
         });
 
         eventWriter->write(argv[i], events);
+    }
+
+    std::cout << "Generation of events finished" << std::endl;
+
+    if (!strcmp(argv[argc - 1], "-t")) {
+        return 1;
     }
 
     return 0;
@@ -77,6 +79,30 @@ int mainLoop(ConfigurationValues *config) {
     return 0;
 }
 
+void
+writeResults(std::unordered_map<int, std::list<double>> results, const std::list<std::string> &statements,
+             const std::string &cidPrefix, std::unordered_map<int, std::string> suffixes) {
+    std::ofstream file("results_" + cidPrefix + ".csv");
+    file << " ,";
+
+    int i = 0;
+    for (auto st: statements) {
+        file << "q" << i << ",";
+        i++;
+    }
+    file << "\n";
+
+    for (i = 10000; i <= 10000000; i *= 10) {
+        file << suffixes[i] << ",";
+        for (double value: results[i]) {
+            file << value << ",";
+            std::cout << value << std::endl;
+        }
+        file << "\n";
+    }
+    file.close();
+}
+
 int executeTests(ConfigurationValues *config) {
     std::string cidPrefix;
     if (config->eventType == EventType::MEMORY_KEY_VALUE) {
@@ -105,18 +131,21 @@ int executeTests(ConfigurationValues *config) {
     for (int i = 10000; i <= 10000000; i *= 10) {
         results[i] = std::list<double>();
         for (std::string st: statements) {
+            double diff = 0;
             st = replaceAll(st, "<log>", cidPrefix + suffixes[i]);
-            std::cout << st << std::endl;
 
-            auto start = std::chrono::steady_clock::now();
-            parser->parse(st);
-            auto end = std::chrono::steady_clock::now();
-            double diff = std::chrono::duration<double, std::milli>(end - start).count();
-            std::cout << diff << std::endl;
+            for (int j = 0; j < config->nExecutions; j++) {
+                auto start = std::chrono::steady_clock::now();
+                parser->parse(st);
+                auto end = std::chrono::steady_clock::now();
+                diff += std::chrono::duration<double, std::milli>(end - start).count();
+            }
+            diff /= config->nExecutions;
             results[i].push_back(diff);
         }
     }
 
+    writeResults(results, statements, cidPrefix, suffixes);
     return 0;
 }
 

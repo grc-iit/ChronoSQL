@@ -72,6 +72,7 @@ private:
             }
 
             std::cout << "----------" << std::endl;
+            i = 0;
             for (auto &event: *events) {
                 std::string windowValue = isWindow ? std::to_string(event.first) + "     " : "";
                 std::cout << windowValue << event.second << std::endl;
@@ -82,7 +83,6 @@ private:
                 std::cout << "(" << i << " events)" << std::endl;
             }
         }
-        free(events);
     }
 
     int parseSelectStatement(const hsql::SelectStatement *statement) {
@@ -132,6 +132,10 @@ private:
 
         printResults(results, aliases, groupByExpressions);
 
+        free(results);
+        free(conditions);
+        free(expressions);
+        free(groupByExpressions);
         return 0;
     }
 
@@ -153,6 +157,7 @@ private:
                             value->push_back(ev);
                         }
                     }
+                    free(events);
                     return value;
                 }
             } else if (e->isFunction) {
@@ -169,6 +174,7 @@ private:
                     if (e->name == "COUNT") {
                         auto results = executeExpressions(cid, e->nestedExpressions, conditions, groupBy, aliases);
                         value->push_back(std::pair(0, std::to_string(results->size()).c_str()));
+                        free(results);
                     } else if (e->name == "WINDOW") {
                         if (e->nestedExpressions == nullptr || e->nestedExpressions->empty() ||
                             e->nestedExpressions->front()->type != hsql::kExprLiteralInterval) {
@@ -281,6 +287,7 @@ private:
             if (aggregate != nullptr) {
                 value.push_back({intervalStart, longToChar(currentAgg)});
             }
+
         }
 
         free(events);
